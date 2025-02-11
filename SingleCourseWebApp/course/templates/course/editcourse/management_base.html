@@ -1,0 +1,44 @@
+{% extends "course/editcourse/base.html" %}
+{% load static %}
+
+{% block extra_css %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'course/css/shared/base.css' %}">
+<link rel="stylesheet" href="{% static 'course/css/components/navbar.css' %}">
+<link rel="stylesheet" href="{% static 'course/css/management.css' %}">
+{% endblock %}
+
+{% block content %}
+<nav class="navbar navbar-expand-lg">
+    <div class="container">
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link {% if active_tab == 'overview' %}active{% endif %}" 
+                       href="{% url 'course:manage_course' course.id %}?option=overview">Übersicht</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if active_tab == 'modules' %}active{% endif %}" 
+                       href="{% url 'course:manage_course' course.id %}?option=modules">Module</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if active_tab == 'groups' %}active{% endif %}" 
+                       href="{% url 'course:manage_course' course.id %}?option=groups">Gruppen</a>
+                </li>
+            </ul>
+        </div>
+        <div>
+            <a class="navbar-brand" href="{% url 'course:home' %}">Startseite</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    {% block management_content %}{% endblock %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+{% endblock %} 

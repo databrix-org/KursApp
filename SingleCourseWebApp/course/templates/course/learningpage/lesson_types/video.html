@@ -1,0 +1,10 @@
+<div class="lesson-content video-content">
+    {% if video_url %}
+    <video controls class="lesson-video">
+        <source src="{{ video_url }}" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    {% else %}
+    <p class="text-muted">No video available for this lesson.</p>
+    {% endif %}
+</div> 

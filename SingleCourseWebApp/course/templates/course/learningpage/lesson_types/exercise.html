@@ -1,0 +1,108 @@
+{% load static %}
+{% load course_extras %}
+
+<!-- Add CSS link at the top -->
+<link rel="stylesheet" href="{% static 'course/css/exercise.css' %}">
+
+<div class="lesson-content exercise-content">
+    {% if lesson_type == 'exercise' %}
+        {% csrf_token %}
+
+        <!-- Submission History Section -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-wrapper">
+                    <div class="collapsible-header">
+                        <span>Letzte Einreichung</span>
+                        <i class="fas fa-chevron-up"></i>
+                    </div>
+                    <div class="collapsible-content">
+                        <div class="table-responsive">
+                            <table class="table table-hover submission-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Datum</th>
+                                        <th>Eingereicht von</th>
+                                        <th>Feedback</th>
+                                        <th>Note</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if latest_submission %}
+                                    <tr>
+                                        <td>#{{ latest_submission.id }}</td>
+                                        <td>{{ latest_submission.submitted_at|date:"d.m.Y H:i" }}</td>
+                                        <td>{{ latest_submission.student.get_full_name }}</td>
+                                        <td>
+                                            {% if latest_submission.feedback %}
+                                                {{ latest_submission.feedback }}
+                                            {% else %}
+                                                <span class="text-muted">Noch kein Feedback</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if latest_submission.score %}
+                                                <span class="badge bg-success">{{ latest_submission.score }}</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Ausstehend</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted">
+                                            Noch keine Einreichungen
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="submit-container">
+                            <button type="button" class="submit-btn" data-lesson-id="{{ lesson_id }}">
+                                <i class="fas fa-paper-plane"></i>
+                                Einreichen
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Launch Assignment Section -->
+        {% if exercise_type == 'jupyter' %}
+            <div class="launch-container">
+                {% if course.domain_name %}
+                    {% with group=request.user.course_groups.first %}
+                        {% if group %}
+                            {% if notebook_name %}
+                                <button class="btn btn-primary btn-lg launch-btn" 
+                                    data-domain="{{ course.domain_name }}" 
+                                    data-group="group_{{ group.id }}"
+                                    data-exercise-name="{{ exercise_name }}"
+                                    data-notebook-name="{{ notebook_name }}">
+                                    <i class="fas fa-rocket me-2"></i>Labor starten
+                                </button>
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    Für diese Übung ist keine Notebook-Datei konfiguriert. Bitte kontaktieren Sie Ihren Kursleiter.
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="alert alert-warning">
+                                Sie müssen einer Gruppe angehören, um auf das Labor zugreifen zu können.
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+                {% else %}
+                    <div class="alert alert-warning">
+                        JupyterHub-Domain ist nicht konfiguriert. Bitte kontaktieren Sie Ihren Kursleiter.
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+
+    {% endif %}
+</div>
+
+<script src="{% static 'course/js/exercise.js' %}"></script>

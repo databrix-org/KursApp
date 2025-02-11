@@ -1,0 +1,59 @@
+{% extends "course/submissions/dashboard_base.html" %}
+
+{% block dashboard_content %}
+<div class="mb-4">
+    <a href="{% url 'course:home' %}" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left"></i> Home
+    </a>
+</div>
+
+<div class="container-fluid dashboard-content">
+    <div class="dashboard-header mb-4">
+        <h2 class="dashboard-title">Übungsabgaben</h2>
+        <div class="dashboard-summary">
+            <div class="summary-item">
+                <i class="fas fa-tasks"></i>
+                <span>Gesamt: {{ exercises|length }}</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="exercise-grid" id="exerciseGrid">
+        {% for exercise in exercises %}
+        <div class="exercise-card">
+            <div class="exercise-card-header">
+                <span class="module-badge">
+                    <i class="fas fa-folder me-2"></i>
+                    {{ exercise.lesson.module.title }}
+                </span>
+            </div>
+            <div class="exercise-card-body">
+                <h3 class="exercise-title">{{ exercise.lesson.title }}</h3>
+                <div class="submission-metrics">
+                    <div class="metric">
+                        <i class="fas fa-users"></i>
+                        <span class="metric-value">{{ exercise.total_groups_submitted }}</span>
+                        <span class="metric-label">Eingereicht</span>
+                    </div>
+                    <div class="metric">
+                        <i class="fas fa-clock"></i>
+                        <span class="metric-value">{{ exercise.pending_groups }}</span>
+                        <span class="metric-label">Ausstehend</span>
+                    </div>
+                </div>
+                <a href="{% url 'course:exercise_submissions' exercise.id %}" 
+                   class="view-submissions-btn">
+                    <i class="fas fa-eye"></i>
+                    <span>Abgaben anzeigen</span>
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <i class="fas fa-inbox fa-3x"></i>
+            <p>Keine Übungen gefunden.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 

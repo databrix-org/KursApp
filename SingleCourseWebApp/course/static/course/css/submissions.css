@@ -1,0 +1,44 @@
+.split-container {
+    display: flex;
+    height: calc(100vh - 100px);
+    gap: 20px;
+}
+
+.reference-section, .submission-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.file-viewer {
+    flex: 1;
+    overflow: auto;
+}
+
+.file-list {
+    margin-bottom: 15px;
+}
+
+.file-item {
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    margin-bottom: 5px;
+    background: #f8f9fa;
+    transition: background-color 0.2s;
+}
+
+.file-item:hover {
+    background: #e9ecef;
+}
+
+.file-item.active {
+    background: #0d6efd;
+    color: white;
+}
+
+.grading-form {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #dee2e6;
+} 

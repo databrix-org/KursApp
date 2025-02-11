@@ -1,0 +1,106 @@
+{% extends "course/editcourse/management_base.html" %}
+{% load static %}
+
+{% block extra_css %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'course/css/pages/manage-settings.css' %}">
+{% endblock %}
+
+{% block management_content %}
+<div class="settings-container">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="h4 mb-4">Kurseinstellungen</h2>
+                    
+                    <form id="courseSettingsForm" method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="courseTitle" class="form-label">Kurstitel</label>
+                            <input type="text" class="form-control" id="courseTitle" name="title" 
+                                   value="{{ course.title }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="courseDescription" class="form-label">Kursbeschreibung</label>
+                            <textarea class="form-control" id="courseDescription" name="description" 
+                                      rows="4">{{ course.description }}</textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="maxMembers" class="form-label">Maximale Gruppenmitglieder</label>
+                            <input type="number" class="form-control" id="maxMembers" name="max_members" 
+                                   value="{{ course.max_members }}" min="1" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="difficultyLevel" class="form-label">Schwierigkeitsgrad</label>
+                            <select class="form-select" id="difficultyLevel" name="difficulty_level">
+                                <option value="1" {% if course.difficulty_level == 1 %}selected{% endif %}>Anfänger</option>
+                                <option value="2" {% if course.difficulty_level == 2 %}selected{% endif %}>Fortgeschritten</option>
+                                <option value="3" {% if course.difficulty_level == 3 %}selected{% endif %}>Experte</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="isPublished" 
+                                       name="is_published" {% if course.is_published %}checked{% endif %}>
+                                <label class="form-check-label" for="isPublished">
+                                    Kurs veröffentlichen
+                                </label>
+                            </div>
+                            <small class="text-muted">Wenn veröffentlicht, können sich Studierende für diesen Kurs einschreiben.</small>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <h4 class="mb-3">JupyterLab-Umgebung</h4>
+                        <div class="mb-3">
+                            <label for="jupyterImage" class="form-label">JupyterLab Image</label>
+                            <input type="text" class="form-control" id="jupyterImage" name="jupyterlab_image" 
+                                   placeholder="z.B. jupyter/datascience-notebook:latest"
+                                   value="{{ course.jupyterlab_image.image_name|default:'' }}">
+                            <small class="text-muted">Geben Sie den Docker Hub Image-Namen für die JupyterLab-Umgebung ein</small>
+                            {% if course.jupyterlab_image %}
+                            <div class="mt-2">
+                                <span class="text-success">
+                                    <i class="bi bi-check-circle"></i>
+                                    Aktuelles Image: {{ course.jupyterlab_image.image_name }}
+                                </span>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="domainName" class="form-label">Virtuelle Maschine Domain</label>
+                            <input type="text" class="form-control" id="domainName" name="domain_name"
+                                   placeholder="z.B. jupyter.example.com"
+                                   value="{{ course.domain_name|default:'' }}">
+                            <small class="text-muted">Geben Sie den Domainnamen ein, unter dem JupyterHub gehostet wird (ohne http/https)</small>
+                            {% if course.domain_name %}
+                            <div class="mt-2">
+                                <span class="text-success">
+                                    <i class="bi bi-check-circle"></i>
+                                    Aktuelle Domain: {{ course.domain_name }}
+                                </span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary">Änderungen speichern</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="{% static 'course/js/manage-settings.js' %}"></script>
+{% endblock %} 

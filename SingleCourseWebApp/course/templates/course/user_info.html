@@ -1,0 +1,26 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+</head>
+<body>
+    <div>
+      <h1>User stuff</h1>
+      <p>The mapped shib attributes will display here.</p>
+      <ul>
+          <li>username: {{ user.username }}</li>
+          <li>name: {{ user.first_name }} {{ user.last_name }}</li>
+      </ul>
+      
+      <h2>Shibboleth Headers</h2>
+      <ul>
+      {% for key, value in request.META.items %}
+
+          <li><strong>{{ key }}:</strong> {{ value }}</li>
+
+      {% endfor %}
+      </ul>
+    </div> 
+</body>
+</html>
+
+

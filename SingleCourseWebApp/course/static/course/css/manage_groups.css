@@ -1,0 +1,319 @@
+/* Card and Table Styles */
+.management-card {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border: none;
+    border-radius: 12px;
+    background: #ffffff;
+    margin-bottom: 2rem;
+}
+
+.table-container {
+    margin: 0.5rem;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table {
+    margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table thead th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #e9ecef;
+    padding: 1.25rem 1rem;
+    font-weight: 600;
+    color: #344767;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.table tbody td {
+    padding: 1.25rem 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f0f2f5;
+    color: #495057;
+    font-size: 0.95rem;
+}
+
+/* Button Group Styles */
+.btn-group {
+    gap: 0.5rem;
+}
+
+.btn-group .btn {
+    border-radius: 6px !important;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.btn-outline-primary {
+    border-color: #e9ecef;
+    color: #3b7ddd;
+}
+
+.btn-outline-primary:hover {
+    background-color: #3b7ddd;
+    border-color: #3b7ddd;
+    color: #ffffff;
+}
+
+.btn-outline-secondary {
+    border-color: #e9ecef;
+    color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: #ffffff;
+}
+
+/* Member Count Badge */
+.members-link {
+    color: #495057;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+}
+
+.member-count {
+    background-color: #e9ecef;
+    color: #495057;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.members-link:hover .member-count {
+    background-color: #3b7ddd;
+    color: #ffffff;
+}
+
+/* Create Group Button */
+.create-group-btn {
+    background-color: #3b7ddd;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(59, 125, 221, 0.2);
+}
+
+.create-group-btn:hover {
+    background-color: #2d62b9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(59, 125, 221, 0.3);
+}
+
+/* Empty State */
+.table-empty-state {
+    padding: 3rem;
+    text-align: center;
+    color: #6c757d;
+}
+
+.table-empty-state i {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: #dee2e6;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .table-container {
+        overflow-x: auto;
+    }
+    
+    .btn-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .btn-group .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+        justify-content: center;
+    }
+    
+    .table thead th,
+    .table tbody td {
+        padding: 1rem 0.75rem;
+        font-size: 0.875rem;
+    }
+}
+
+/* Modal Styles */
+.custom-modal .modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    padding: 1rem 1.5rem;
+}
+
+.custom-modal .modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.custom-modal .modal-body {
+    padding: 1.5rem;
+    background-color: #ffffff;
+}
+
+/* Member List Styles */
+.member-list-container {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 2rem;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+}
+
+.list-group-item {
+    border-left: none;
+    border-right: none;
+    padding: 1.25rem;
+    transition: all 0.2s ease;
+}
+
+.list-group-item:first-child {
+    border-top: none;
+}
+
+.list-group-item:last-child {
+    border-bottom: none;
+}
+
+.list-group-item:hover {
+    background-color: #f8f9fa;
+}
+
+.member-info {
+    flex-grow: 1;
+}
+
+.member-name {
+    color: #2c3e50;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.member-detail {
+    color: #6c757d;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+}
+
+.member-detail i {
+    width: 16px;
+    color: #8c98a4;
+    font-size: 1rem;
+}
+
+/* Add Student Section */
+.add-student-section {
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.add-student-section .form-label {
+    font-weight: 500;
+    color: #2c3e50;
+    margin-bottom: 0.75rem;
+}
+
+.add-student-section .input-group {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.add-student-section .form-select {
+    border-right: 0;
+}
+
+.add-student-section .btn-primary {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+}
+
+.member-limit-info {
+    margin-top: 0.75rem;
+    color: #6c757d;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Remove Member Button */
+.remove-member-btn {
+    opacity: 0;
+    transition: all 0.2s ease;
+}
+
+.list-group-item:hover .remove-member-btn {
+    opacity: 1;
+}
+
+.remove-member-btn:hover {
+    background-color: #dc3545;
+    color: white;
+    border-color: #dc3545;
+}
+
+/* Loading Spinner */
+.spinner-container {
+    padding: 2rem;
+}
+
+/* Toast Notifications */
+.toast-container {
+    z-index: 1060;
+}
+
+.custom-toast {
+    min-width: 300px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .btn-group {
+        flex-direction: column;
+    }
+    
+    .btn-group .btn {
+        margin-bottom: 0.5rem;
+    }
+} 

@@ -1,0 +1,384 @@
+{% extends "course/submissions/dashboard_base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'course/css/submissions.css' %}">
+<link rel="stylesheet" href="{% static 'course/css/nbviewer.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/github.min.css">
+<style>
+    .viewer-container {
+        height: calc(100vh - 100px);
+        margin-bottom: 20px;
+        background: transparent;
+        border-radius: 0;
+        box-shadow: none;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        padding-right: 0;
+    }
+    .file-list {
+        margin-bottom: 15px;
+    }
+    .file-item {
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 4px;
+        margin-bottom: 5px;
+        background: #f8f9fa;
+        transition: background-color 0.2s;
+    }
+    .file-item:hover {
+        background: #e9ecef;
+    }
+    .file-item.active {
+        background: #0d6efd;
+        color: white;
+    }
+    .file-viewer {
+        flex: 1;
+        overflow: auto;
+        background: transparent;
+        border-radius: 0;
+        padding: 0;
+        margin-top: 0;
+    }
+    .back-button {
+        display: none;
+        margin-bottom: 10px;
+    }
+    .editor-container {
+        height: 100%;
+        width: 100%;
+    }
+    .notebook-viewer {
+        height: 100%;
+        width: 100%;
+        border: none;
+    }
+    .grading-section {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 20px;
+        margin-top: 20px;
+    }
+    .diff-added {
+        background-color: #e6ffec;
+        border-left: 4px solid #2ea043;
+    }
+    .diff-removed {
+        background-color: #ffebe9;
+        border-left: 4px solid #cf222e;
+    }
+    .diff-unchanged {
+        background-color: #ffffff;
+        border-left: 4px solid #d0d7de;
+    }
+    .reference-upload {
+        margin-bottom: 15px;
+    }
+    .notebook-diff {
+        padding: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-right: 20px;
+    }
+    .notebook-cell {
+        margin: 0;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    .cell-comparison {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        background: #f8f9fa;
+        padding: 8px;
+        border-radius: 4px;
+        position: relative;
+    }
+    .cell-single {
+        grid-column: 1 / -1;
+        background: #ffffff;
+        border: 1px solid #e1e4e8;
+        border-radius: 4px;
+    }
+    .comparison-header {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
+        gap: 12px;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #586069;
+        position: sticky;
+        top: 0;
+        background: #fff;
+        z-index: 100;
+        padding: 8px 0;
+        align-items: center;
+    }
+    .comparison-title {
+        padding: 8px;
+        background: #f6f8fa;
+        border-radius: 4px;
+        text-align: center;
+    }
+    .diff-identical {
+        background-color: #ffffff;
+        border-left: none;
+    }
+    .cell-type {
+        font-size: 12px;
+        text-transform: uppercase;
+        color: #666;
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+    .cell-content {
+        background: #ffffff;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    .cell-content pre {
+        margin: 0;
+        padding: 8px;
+        background: #f6f8fa;
+    }
+    .cell-outputs {
+        border-top: 1px solid #eaecef;
+        padding: 8px;
+        background: #fafbfc;
+    }
+    .output-stream, .output-result {
+        margin: 4px 0;
+        padding: 6px;
+        background: #f6f8fa;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 13px;
+        white-space: pre-wrap;
+    }
+    .notebook-viewer {
+        display: none;
+    }
+    .editor-container {
+        display: none;
+        height: 100%;
+    }
+    .cell-comparison .diff-removed {
+        order: 1;
+    }
+    .cell-comparison .diff-added {
+        order: 2;
+    }
+    .points-input-container,
+    .points-input {
+        display: none;
+    }
+    .cell-wrapper {
+        position: relative;
+        margin-bottom: 8px;
+    }
+    .cell-single, .cell-comparison {
+        margin-bottom: 0;  /* Remove bottom margin as it's handled by cell-wrapper */
+    }
+    .submission-details {
+        transition: max-height 0.3s ease-out;
+        overflow: hidden;
+    }
+    .submission-details.collapsed {
+        max-height: 0;
+        padding: 0;
+        opacity: 0;
+    }
+    .submission-details.expanded {
+        max-height: 500px;
+        opacity: 1;
+    }
+    .collapse-toggle {
+        cursor: pointer;
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #f8f9fa;
+        border-radius: 4px;
+        margin-bottom: 10px;
+    }
+    .collapse-toggle i {
+        transition: transform 0.3s;
+    }
+    .collapse-toggle.collapsed i {
+        transform: rotate(-90deg);
+    }
+    .card-body {
+        transition: padding 0.3s ease-out;
+    }
+    .collapsed .card-body {
+        padding: 0;
+    }
+</style>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    <div class="mb-4">
+        <a href="{% url 'course:exercise_submissions' exercise.id %}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left"></i> Zurück
+        </a>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="collapse-toggle collapsed" onclick="toggleDetails(this)">
+            <h5 class="mb-0">Abgabe-Details</h5>
+            <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="submission-details collapsed">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Übung:</strong> {{ exercise.lesson.title }}</p>
+                        <p><strong>Gruppe:</strong> Gruppe {{ group }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Eingereicht:</strong> {{ submission.submitted_at|date:"d.m.Y H:i" }}</p>
+                        <p><strong>Punkte:</strong> 
+                            {% if submission.score != None %}
+                                {{ submission.score }}
+                            {% else %}
+                                Noch nicht bewertet
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                <div class="reference-upload mt-3">
+                    <input type="file" id="referenceUpload" accept=".ipynb" class="d-none">
+                    <button class="btn btn-outline-primary" onclick="document.getElementById('referenceUpload').click()">
+                        {% if has_reference_solution %}
+                            <i class="fas fa-sync"></i> Change Reference Solution
+                        {% else %}
+                            <i class="fas fa-upload"></i> Upload Reference Solution
+                        {% endif %}
+                    </button>
+                    {% if has_reference_solution %}
+                        <span class="badge bg-info ms-2">Reference Solution Available</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="viewer-container" data-exercise-id="{{ exercise.id }}">
+        <button class="btn btn-outline-secondary back-button" id="backToFiles">
+            <i class="fas fa-arrow-left"></i> Zurück zu Dateien
+        </button>
+
+        <div class="file-list" id="submissionFileList">
+            {% for file in submission.files.all %}
+            <div class="file-item" data-file-url="{{ file.file.url }}" data-file-type="{{ file.file.name|slice:'-6:' }}" onclick="loadSubmissionFile(this)">
+                <i class="fas fa-file"></i>
+                <span>{{ file.file.name|cut:"exercise_submissions"|cut:"group_"|truncatechars:100 }}</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="file-viewer" id="fileViewer">
+            <div class="editor-container" id="editor"></div>
+            <div class="notebook-viewer"></div>
+        </div>
+    </div>
+    
+    <div class="grading-section">
+        <form id="gradingForm" class="row">
+            {% csrf_token %}
+            <div class="col-12">
+                <div class="form-group">
+                    <label for="feedback">Feedback</label>
+                    <textarea class="form-control" id="feedback" name="feedback" 
+                              rows="8" style="min-height: 200px; font-size: 1.1rem;"
+                              placeholder="Geben Sie hier detailliertes Feedback für den Studenten ein...">{{ submission.feedback|default:'' }}</textarea>
+                </div>
+            </div>
+            <div class="col-md-4 mt-3">
+                <div class="form-group">
+                    <label for="score">Punkte</label>
+                    <input type="number" class="form-control" id="score" name="score" 
+                           min="0" max="100" step="0.1" required
+                           value="{{ submission.score|default:'' }}"
+                           style="font-size: 1.2rem; padding: 12px;">
+                </div>
+            </div>
+            <div class="col-12 mt-3">
+                <button type="submit" class="btn btn-primary">Bewertung speichern</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js"></script>
+<script src="{% static 'course/js/nbviewer.js' %}"></script>
+<script src="{% static 'course/js/grade-submission.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        initGradingForm(
+            '{{ submission.id }}',
+            '{% url "course:exercise_submissions" exercise.id %}'
+        );
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('gradingForm');
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            try {
+                const response = await fetch('', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify({
+                        score: document.getElementById('score').value,
+                        feedback: document.getElementById('feedback').value
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    alert('Bewertung erfolgreich gespeichert!');
+                } else {
+                    alert('Fehler beim Speichern der Bewertung: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error saving grade: ' + error);
+            }
+        });
+    });
+
+    // Add this before the DOMContentLoaded event
+    const initialReferenceSolution = {% if reference_solution %}{{ reference_solution|safe }}{% else %}null{% endif %};
+
+    function toggleDetails(element) {
+        const details = document.querySelector('.submission-details');
+        const isCollapsed = details.classList.contains('collapsed');
+        
+        if (isCollapsed) {
+            details.classList.remove('collapsed');
+            details.classList.add('expanded');
+            element.classList.remove('collapsed');
+        } else {
+            details.classList.remove('expanded');
+            details.classList.add('collapsed');
+            element.classList.add('collapsed');
+        }
+    }
+</script>
+{% endblock %}

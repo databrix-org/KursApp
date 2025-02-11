@@ -1,0 +1,817 @@
+.course-details-container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 2rem;
+    min-height: 100vh;
+}
+
+.course-header {
+    position: relative;
+    background: linear-gradient(135deg, #8a8c8e, #558bdb);
+    padding: 4rem 2rem;
+    margin-bottom: 2rem;
+    max-width: 1600px;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+    max-width: 1600px;
+    margin: 0;
+    padding-left: 1rem;
+}
+
+.header-content h1 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.provider-info {
+    display: none;
+}
+
+.provider-info span {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 1.1rem;
+}
+
+.begin-project-btn {
+    background-color: white;
+    color: #1a73e8;
+    padding: 0.8rem 2rem;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    margin-top: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.begin-project-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.begin-project-btn.enroll-btn {
+    background-color: #007bff !important;  /* Bootstrap blue color */
+    color: white !important;
+}
+
+.course-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid #dadce0;
+    background-color: white;
+    padding: 0 1rem;
+    border-radius: 8px 8px 0 0;
+}
+
+.tab-button {
+    padding: 1rem 1.5rem;
+    border: none;
+    background: none;
+    color: #5f6368;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+}
+
+.tab-button.active {
+    color: #1a73e8;
+    border-bottom: 2px solid #1a73e8;
+}
+
+.group-popup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    max-width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    padding: 2rem;
+}
+
+.popup-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.popup-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #1a1a1a;
+}
+
+.search-group {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+#groupSearchInput {
+    padding: 0.8rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+#groupSearchInput:focus {
+    outline: none;
+    border-color: #1a73e8;
+}
+
+.popup-options {
+    display: grid;
+    gap: 1rem;
+}
+
+.popup-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.popup-tab {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    background: #f5f5f5;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.popup-tab.active {
+    background: #1a73e8;
+    color: white;
+}
+
+.group-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+}
+
+.group-info {
+    flex-grow: 1;
+}
+
+.join-existing-btn {
+    background: #1a73e8;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.join-existing-btn:hover {
+    background: #1557b0;
+}
+
+.member-count {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.group-members {
+    margin-top: 0.5rem;
+    color: #444;
+}
+
+.join-group-btn {
+    background-color: white;
+    color: #1a73e8;
+    padding: 0.8rem 2rem;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.join-group-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    color: #1557b0;
+}
+
+.search-group-btn {
+    background: #1a73e8;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.search-group-btn:hover {
+    background: #1557b0;
+}
+
+.tab-content {
+    display: none;
+    padding: 20px;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.group-info-container {
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.group-details {
+    margin-top: 15px;
+}
+
+.group-members-list {
+    list-style-type: none;
+    padding-left: 20px;
+}
+
+.group-members-list li {
+    margin: 5px 0;
+}
+
+.no-group-message {
+    text-align: center;
+    padding: 30px;
+}
+
+.no-group-message button {
+    margin-top: 15px;
+}
+
+.manage-course-btn {
+    background-color: white;
+    color: #1a73e8;
+    padding: 0.8rem 2rem;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    margin-top: 1.5rem;
+    margin-right: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: inline-block;
+    text-decoration: none;
+}
+
+.manage-course-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    color: #1557b0;
+}
+
+.manage-course-btn:last-child {
+    margin-right: 0;
+}
+
+.existing-groups {
+    margin-top: 20px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.group-item h5 {
+    margin: 0 0 10px 0;
+}
+
+.group-item ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 5px 0;
+}
+
+.logout-form {
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    z-index: 100;
+}
+
+.logout-btn {
+    background-color: white;
+    color: #1a73e8;
+    padding: 0.8rem 2rem;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.logout-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.group-item.selected {
+    border: 2px solid #1a73e8;
+    background: #e8f0fe;
+}
+
+#confirmJoin {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.1rem;
+}
+
+/* Group Popup Styles */
+.group-popup-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.popup-content {
+    position: relative;
+    background-color: white;
+    width: 80%;
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.popup-header h3 {
+    margin: 0;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0 8px;
+}
+
+.popup-body {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.search-group {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+#groupSearchInput {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.search-group-btn {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.groups-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 10px;
+}
+
+.group-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    background-color: #fff;
+}
+
+.group-info h4 {
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.member-list {
+    margin: 10px 0;
+}
+
+.member-list ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 5px 0;
+}
+
+.created-date {
+    color: #666;
+    font-size: 0.9em;
+    margin: 10px 0;
+}
+
+.join-group-btn {
+    width: 100%;
+    padding: 8px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.join-group-btn:hover {
+    background-color: #218838;
+}
+
+.no-groups-message {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
+
+.groups-container.single-column {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.groups-container.single-column .group-card {
+    width: 100%;
+}
+
+/* Enhanced Content Styles */
+.content-card {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.content-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.content-title {
+    font-size: 1.5rem;
+    color: #1a1a1a;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.prose-content {
+    line-height: 1.7;
+    color: #444;
+    max-width: 800px;
+}
+
+.styled-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.list-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    transition: background 0.2s ease;
+}
+
+.module-number {
+    font-weight: 600;
+    color: #1a73e8;
+    min-width: 100px;
+}
+
+.module-title {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.detail-item i {
+    font-size: 1.5rem;
+    color: #1a73e8;
+}
+
+.detail-label {
+    display: block;
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 0.25rem;
+}
+
+.detail-value {
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.member-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.member-badge {
+    background: white;
+    border: 1px solid #e0e0e0;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.member-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.member-icon {
+    font-size: 1.2rem;
+    color: #666;
+}
+
+.member-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.member-name {
+    font-weight: 600;
+    color: #333;
+}
+
+.member-email {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #666;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.member-email:hover {
+    color: #1a73e8;
+}
+
+.email-icon {
+    font-size: 0.9rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    background: #f8f9fa;
+    border-radius: 12px;
+}
+
+.empty-state i {
+    font-size: 2.5rem;
+    color: #ccc;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Enhanced Course Description Card */
+.description-card {
+    padding: 2.5rem;
+    border-left: 4px solid #1a73e8;
+    background: linear-gradient(to right, #f8f9fa 0%, #ffffff 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.description-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -4px;
+    height: 100%;
+    width: 4px;
+    background: linear-gradient(to bottom, #1a73e8, #00c6ff);
+}
+
+.description-header {
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.decorative-line {
+    height: 2px;
+    background: linear-gradient(to right, #1a73e8, transparent);
+    margin-top: 0.5rem;
+}
+
+.prose-content {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #444;
+    font-family: 'Merriweather', serif;
+}
+
+.description-footer {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #eee;
+}
+
+.meta-info {
+    display: flex;
+    gap: 2rem;
+    color: #666;
+    font-size: 0.95rem;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Updated Button Styles */
+.course-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+}
+
+.action-btn {
+    padding: 1rem 1.8rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.action-btn.primary {
+    background: #1a73e8;
+    color: white;
+}
+
+.action-btn.secondary {
+    background: #ffffff;
+    color: #1a73e8;
+    border: 2px solid #1a73e8;
+}
+
+.action-btn.enroll {
+    background: #28a745;
+    color: white;
+}
+
+.action-btn.instructor {
+    background: #6c757d;
+    color: white;
+}
+
+.action-btn.logout {
+    background: #dc3545;
+    color: white;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.action-btn.primary:hover {
+    background: #1557b0;
+}
+
+.action-btn.secondary:hover {
+    background: #f8f9fa;
+}
+
+.btn-icon {
+    font-size: 1.2em;
+}
+
+.action-btn.admin {
+    background: #6f42c1;  /* Purple color for admin */
+    color: white;
+}
+
+.action-btn.admin:hover {
+    background: #5a32a3;
+}
+
+/* Contact Admin Section Styles */
+.contact-admin-section {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid #eee;
+}
+
+.contact-description {
+    color: #666;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+    font-size: 1.1rem;
+}
+
+.contact-actions {
+    display: flex;
+    justify-content: center;
+}
+
+.action-btn.contact {
+    background: #6c757d;
+    color: white;
+    padding: 0.8rem 2rem;
+    font-size: 1.1rem;
+}
+
+.action-btn.contact:hover {
+    background: #5a6268;
+}

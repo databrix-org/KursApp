@@ -1,0 +1,222 @@
+.navbar {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.navbar-nav .nav-link {
+    padding: 0.5rem 1rem;
+    margin: 0 0.25rem;
+    transition: all 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover {
+    background-color: #e9ecef;
+    border-radius: 4px;
+} 
+
+/* Split View Layout */
+.split-view {
+    display: flex;
+    height: calc(90vh - 56px); /* Account for modal header */
+    overflow: hidden;
+}
+
+.split-view .sidebar {
+    width: 300px;
+    flex-shrink: 0;
+    border-right: 1px solid #dee2e6;
+    display: flex;
+    flex-direction: column;
+    background-color: #f8f9fa;
+}
+
+.split-view .main-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    background-color: #fff;
+}
+
+/* Module Info Section */
+.module-info {
+    padding: 1.5rem;
+    background-color: #fff;
+    border-bottom: 1px solid #dee2e6;
+}
+
+/* Lessons Section */
+.lessons-section {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.lessons-header {
+    background-color: #fff;
+    padding: 1rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.lessons-list {
+    overflow-y: auto;
+    padding: 0.5rem;
+}
+
+/* Lesson Items */
+.lesson-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.lesson-item:hover {
+    background-color: #f8f9fa;
+    border-color: #adb5bd;
+}
+
+.lesson-item.active {
+    background-color: #e9ecef;
+    border-color: #6c757d;
+}
+
+.lesson-item .drag-handle {
+    cursor: move;
+    padding: 0 0.5rem;
+    color: #6c757d;
+}
+
+.lesson-item .lesson-title {
+    flex-grow: 1;
+    margin: 0 0.5rem;
+}
+
+.lesson-item .lesson-type-badge {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 0.25rem;
+    margin-right: 0.5rem;
+}
+
+.lesson-item .btn-delete {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.lesson-item:hover .btn-delete {
+    opacity: 1;
+}
+
+/* Lesson Type Badges */
+.badge-reading {
+    background-color: #cff4fc;
+    color: #055160;
+}
+
+.badge-video {
+    background-color: #ffd6e0;
+    color: #58151c;
+}
+
+.badge-exercise {
+    background-color: #d1e7dd;
+    color: #0a3622;
+}
+
+/* Editor Styles */
+.editor-container {
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    margin-top: 1rem;
+}
+
+/* Toast Notifications */
+.toast-container {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1060;
+}
+
+.toast {
+    background-color: #fff;
+    border: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.toast .toast-body {
+    padding: 0.75rem 1.25rem;
+}
+
+.toast .toast-body.success {
+    background-color: #d1e7dd;
+    color: #0a3622;
+}
+
+.toast .toast-body.error {
+    background-color: #f8d7da;
+    color: #58151c;
+}
+
+/* Loading States */
+.loading {
+    position: relative;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading::before {
+    content: '';
+    width: 2rem;
+    height: 2rem;
+    border: 0.25rem solid #dee2e6;
+    border-top-color: #0d6efd;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top: -1rem;
+    margin-left: -1rem;
+    animation: spin 1s linear infinite;
+    z-index: 1;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .split-view {
+        flex-direction: column;
+    }
+
+    .split-view .sidebar {
+        width: 100%;
+        height: auto;
+        max-height: 40vh;
+    }
+
+    .split-view .main-content {
+        height: 60vh;
+    }
+} 

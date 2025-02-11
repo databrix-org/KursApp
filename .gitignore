@@ -1,0 +1,82 @@
+# Python & Django
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.pyc
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+
+# Build and Distribution
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Django specific
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+db.sqlite3-*
+staticfiles/
+
+# Virtual Environment
+venv/
+ENV/
+.env*
+.venv
+env/
+
+# IDE and System Files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# Temporary and Log Files
+*.bak
+*.tmp
+*.temp
+logs/
+npm-debug.log*
+
+# Frontend
+node_modules/
+package-lock.json
+
+# Media and Large Files
+media/
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.flv
+
+# Database backups
+*.dump
+*.sql
+
+SingleCourseWebApp/data/media/*.mp4
+SingleCourseWebApp/debug.log
+SingleCourseWebApp/media/*.mp4

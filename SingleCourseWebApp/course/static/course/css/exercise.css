@@ -1,0 +1,183 @@
+.lesson-meta .badge {
+    font-size: 0.9rem;
+    margin-right: 0.5rem;
+}
+
+
+.launch-btn {
+    padding: 1.2rem 2.5rem;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    position: relative;
+    background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(78, 115, 223, 0.2);
+    color: #ffffff;
+    cursor: pointer;
+}
+
+.launch-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(78, 115, 223, 0.3);
+    color: #ffffff;
+}
+
+.launch-btn:active {
+    transform: translateY(0);
+    color: #ffffff;
+}
+
+.launch-btn-description {
+    display: block;
+    font-size: 0.8rem;
+    margin-top: 0.3rem;
+    opacity: 0.8;
+    color: #ffffff;
+}
+
+.launch-btn i {
+    font-size: 1.3rem;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+    color: #ffffff;
+}
+
+.table {
+    margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: #fff;
+    width: 100%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    background-color: #f8f9fa;
+    padding: 1rem;
+    color: #495057;
+    white-space: nowrap;
+    min-width: 100px;
+}
+
+.table td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-top: 1px solid #e9ecef;
+    white-space: nowrap;
+    min-width: 100px;
+}
+
+.table tbody tr:hover {
+    background-color: #f8f9fc;
+    transition: background-color 0.2s ease;
+}
+
+.table .badge {
+    padding: 0.5em 1em;
+    font-weight: 500;
+}
+
+.table .badge.bg-success {
+    background-color: #28a745 !important;
+}
+
+.table .badge.bg-secondary {
+    background-color: #6c757d !important;
+}
+
+.table-responsive {
+    border-radius: 0;
+    overflow: hidden;
+    width: 100%;
+}
+
+.list-group-item {
+    transition: background-color 0.2s;
+}
+
+.list-group-item:hover {
+    background-color: #f8f9fa;
+}
+
+.launch-container {
+    padding: 1.5rem;
+    text-align: center;
+}
+
+/* Collapsible Table Styles */
+.collapsible-header {
+    cursor: pointer;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.2s ease;
+}
+
+.collapsible-header:hover {
+    background-color: #e9ecef;
+}
+
+.collapsible-header i {
+    transition: transform 0.3s ease;
+}
+
+.collapsible-header.collapsed i {
+    transform: rotate(-180deg);
+}
+
+.collapsible-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    width: 100%;
+}
+
+.collapsible-content.show {
+    max-height: 2000px;
+    transition: max-height 0.5s ease-in;
+}
+
+.table-wrapper {
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    width: 100%;
+}
+
+.table td.wrap-content {
+    white-space: normal;
+}
+
+/* Submit button container */
+.submit-container {
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+    text-align: right;
+    border-radius: 0 0 8px 8px;
+}
+
+/* Submit button styling */
+.submit-btn {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #fff;
+    background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
+}
+

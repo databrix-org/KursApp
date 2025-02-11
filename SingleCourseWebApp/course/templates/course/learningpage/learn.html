@@ -1,0 +1,90 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'course/css/base.css' %}">
+<link rel="stylesheet" href="{% static 'course/css/learn.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<div class="course-learning-container">
+    <!-- Welcome Section -->
+    <h1 class="welcome-header">
+        {{ course_title }}
+        <a href="{% url 'course:home' %}" class="home-link">
+            <i class="fa fa-home"></i>
+        </a>
+    </h1>
+    <!-- Course Progress Section -->
+    <section class="course-progress">
+        <div class="progress-wrapper">
+            <div class="progress-header">
+                <h2>Willkommen, {{ request.user.first_name }}</h2>
+                {% if continue_lesson %}
+                    <a href="{% url 'course:lesson_detail' continue_lesson.id %}" class="btn-continue">Kurs fortsetzen</a>
+                {% endif %}
+            </div>
+            <div class="progress-container">
+                <div class="progress-info">
+                    <span>{{ completed_lessons }} von {{ total_lessons }} Lektionen abgeschlossen</span>
+                    <span class="progress-percentage">
+                        {% widthratio completed_lessons total_lessons 100 %}%
+                    </span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" data-progress="{% widthratio completed_lessons total_lessons 100 %}"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Course Content Section -->
+    <section class="course-content">
+        <div class="content-header">
+            <h2>Kursinhalt</h2>
+            <div class="content-summary">
+                <span>{{ modules_data|length }} Module</span> • 
+                <span>{{ total_lessons }} Lektionen</span>
+            </div>
+        </div>
+
+        <!-- Modules List -->
+        <div class="modules-list">
+            {% for module_data in modules_data %}
+            <details class="module" open>
+                <summary class="module-header">
+                    <div class="module-title">
+                        <span class="expand-icon">›</span>
+                        {{ module_data.module.title }}
+                    </div>
+                    <div class="module-meta">
+                        <span>{{ module_data.lessons|length }} lessons</span>
+                        {% if module_data.module.duration %}
+                        • <span>{{ module_data.module.duration }}</span>
+                        {% endif %}
+                    </div>
+                </summary>
+                
+                <ul class="lesson-list">
+                    {% for lesson_data in module_data.lessons %}
+                    <li class="lesson-item {% if lesson_data.progress.is_completed %}completed{% endif %}">
+                        <a href="{% url 'course:lesson_detail' lesson_data.lesson.id %}" class="lesson-link">
+                            <span class="check-icon {% if not lesson_data.progress.is_completed %}uncompleted{% endif %}">
+                                {% if lesson_data.progress.is_completed %}
+                                    <i class="fa fa-check-circle"></i>
+                                {% else %}
+                                    <i class="fa fa-circle-o"></i>
+                                {% endif %}
+                            </span>
+                            <span class="lesson-title">{{ lesson_data.lesson.title }}</span>
+                            {% if lesson_data.lesson.duration %}
+                            <span class="lesson-duration">{{ lesson_data.lesson.duration }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </details>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+
+<input type="hidden" id="debug-data" value="{{ debug_data_json|safe }}">
+<script src="{% static 'course/js/learn.js' %}"></script>

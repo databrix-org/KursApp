@@ -1,0 +1,219 @@
+{% load static %}
+
+{# Add this near the top of your template #}
+<meta name="csrf-token" content="{{ csrf_token }}">
+
+{# CSS Stylesheets #}
+<link rel="stylesheet" href="{% static 'course/css/home.css' %}">
+
+{# Main Course Details Container #}
+<div class="course-details-container" data-course-id="{{ course.id }}">
+    {# Course Header Section #}
+    <div class="course-header">
+        <div class="header-content">
+            <h1>{{ course.title }}</h1>
+            
+            {# Updated Course Action Buttons #}
+            <div class="course-actions">
+                {% if is_enrolled %}
+                    {% if course.max_members == 1 %}
+                        <a href="{% url 'course:course_overview' course.id %}" class="action-btn primary">
+                            <span class="btn-icon">🚀</span>
+                            Kurs starten
+                        </a>
+                    {% else %}
+                        {% if user_group %}
+                            <a href="{% url 'course:course_overview' course.id %}" class="action-btn primary">
+                                <span class="btn-icon">🚀</span>
+                                Kurs starten
+                            </a>
+                        {% else %}
+                            <button class="action-btn secondary" onclick="openGroupPopup()">
+                                <span class="btn-icon">➕</span>
+                                Gruppe beitreten
+                            </button>
+                        {% endif %}
+                    {% endif %}
+                {% else %}
+                    <form action="{% url 'course:course_enroll' course.id %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="action-btn enroll">
+                            <span class="btn-icon">📝</span>
+                            Jetzt einschreiben
+                        </button>
+                    </form>
+                {% endif %}
+                
+                {% if is_instructor %}
+                    <a href="{% url 'course:manage_course' course.id %}" class="action-btn instructor">
+                        <span class="btn-icon">⚙️</span>
+                        Kursverwaltung
+                    </a>
+                    <a href="{% url 'course:submissions_dashboard' %}" class="action-btn instructor">
+                        <span class="btn-icon">📊</span>
+                        Abgaben
+                    </a>
+                {% endif %}
+                
+                {% if request.user.is_superuser %}
+                    <a href="{% url 'course:admin_dashboard' %}" class="action-btn admin">
+                        <span class="btn-icon">👑</span>
+                        Admin-Bereich
+                    </a>
+                {% endif %}
+                
+                <a href="{% url 'shibboleth:logout' %}" class="action-btn logout">
+                    <span class="btn-icon">🔒</span>
+                    Abmelden
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {# Course Navigation Tabs #}
+    <div class="course-tabs">
+        <button class="tab-button active" data-tab="info">Kursübersicht</button>
+        <button class="tab-button" data-tab="modules">Kursmodule</button>
+        <button class="tab-button" data-tab="group">Gruppeninfo</button>
+        <button class="tab-button" data-tab="details">Projektdetails</button>
+
+    </div>
+
+    {# Tab Content Sections #}
+    {# Info Tab Content #}
+    <div class="tab-content active" id="info">
+        <div class="content-card description-card fade-in">
+            <div class="description-header">
+                <h3 class="content-title">Kursübersicht</h3>
+            </div>
+            <div class="prose-content">
+                {{ course.description|linebreaks }}
+            </div>
+        </div>
+    </div>
+
+    {# Modules Tab Content #}
+    <div class="tab-content" id="modules">
+        {% if course.modules.all %}
+            <div class="content-card fade-in">
+                <h3 class="content-title">Kursmodule</h3>
+                <div class="styled-list">
+                    {% for module in course.modules.all %}
+                        <div class="list-item">
+                            <span class="module-number">Modul {{ forloop.counter }}</span>
+                            <h4 class="module-title">{{ module.title }}</h4>
+                        </div>
+                    {% endfor %}
+
+                </div>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="icon-notebook"></i>
+                <p>Noch keine Module verfügbar</p>
+            </div>
+        {% endif %}
+    </div>
+
+    {# Group Info Tab Content #}
+    <div class="tab-content" id="group">
+        <div class="content-card fade-in">
+            {% if user_group %}
+                <h3 class="content-title">Ihre Gruppe</h3>
+                <div class="group-detail-box">
+                    <div class="detail-item">
+                        <span class="detail-label">Gruppen-ID:</span>
+                        <span class="detail-value badge">{{ user_group.id }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Mitglieder:</span>
+                        <div class="member-grid">
+                            {% for member in user_group.members.all %}
+                                <div class="member-badge">
+                                    <span class="member-icon">👤{{ member.first_name }} {{ member.last_name }}</span>
+                                    <div class="member-info">
+                                        <a href="mailto:{{ member.email }}" class="member-email" title="Email {{ member.first_name }}">
+                                            {{ member.email }}
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+
+                    </div>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="icon-group"></i>
+                    <p>Sie sind noch kein Mitglied einer Gruppe</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# Project Details Tab Content #}
+    <div class="tab-content" id="details">
+        <div class="content-card fade-in">
+            <h3 class="content-title">Projektdetails</h3>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <i class="icon-users"></i>
+                    <div>
+                        <span class="detail-label">Max Group Size</span>
+                        <span class="detail-value">{{ course.max_members }}</span>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <i class="icon-calendar"></i>
+                    <div>
+                        <span class="detail-label">Start Date</span>
+                        <span class="detail-value">{{ course.start_date|date:"M d, Y" }}</span>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <i class="icon-deadline"></i>
+                    <div>
+                        <span class="detail-label">End Date</span>
+                        <span class="detail-value">{{ course.end_date|date:"M d, Y" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Group Join Popup Modal #}
+    <div id="groupPopup" class="group-popup-overlay">
+        <div class="popup-content">
+            <div class="popup-header">
+                <h3>Gruppe beitreten</h3>
+                <button class="close-btn" onclick="closeGroupPopup()">×</button>
+            </div>
+            
+            <div class="popup-body">
+                <div class="search-group">
+                </div>
+                <div id="searchResults" class="search-results">
+                    <!-- Groups will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Contact Admin Section #}
+    <div class="contact-admin-section">
+        <div class="content-card fade-in">
+            <h3 class="content-title">Hilfe benötigt?</h3>
+            <p class="contact-description">Bei Fragen oder wenn Sie Unterstützung benötigen, kontaktieren Sie bitte die Kursadministratoren.</p>
+            <div class="contact-actions">
+                <a href="mailto:{{ course.admin_email|default:'admin@databrix.com' }}" class="action-btn contact">
+                    <span class="btn-icon">✉️</span>
+                    Admin kontaktieren
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# JavaScript Section #}
+<script src="{% static 'course/js/home.js' %}"></script>

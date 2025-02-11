@@ -1,0 +1,271 @@
+/* Admin Dashboard Styles */
+
+.admin-nav {
+    background: #fff;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.nav-tabs {
+    border-bottom: 2px solid #e9ecef;
+    display: flex;
+    gap: 1rem;
+}
+
+.nav-link {
+    padding: 0.75rem 1.5rem;
+    color: #6c757d;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+    color: #495057;
+}
+
+.nav-link.active {
+    color: #0d6efd;
+    border-bottom-color: #0d6efd;
+}
+
+.nav-link i {
+    margin-right: 0.5rem;
+}
+
+/* User Management Table */
+.user-table {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.role-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+}
+
+.role-badge.admin {
+    background: #6f42c1;
+    color: white;
+}
+
+.role-badge.instructor {
+    background: #0dcaf0;
+    color: white;
+}
+
+.role-badge.student {
+    background: #198754;
+    color: white;
+}
+
+/* Role Request Cards */
+.role-request-card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.request-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Modal Styles */
+.modal-content {
+    border-radius: 8px;
+}
+
+.modal-header {
+    background: #f8f9fa;
+    border-radius: 8px 8px 0 0;
+}
+
+/* Admin Layout */
+.admin-layout {
+    display: flex;
+    min-height: calc(100vh - 60px);
+}
+
+.admin-sidebar {
+    width: 250px;
+    background: #2c3e50;
+    color: #ecf0f1;
+    padding: 1rem 0;
+    flex-shrink: 0;
+}
+
+.sidebar-header {
+    padding: 0 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.sidebar-header h3 {
+    color: #ecf0f1;
+    font-size: 1.25rem;
+    margin: 0;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+}
+
+.nav-item {
+    padding: 0.75rem 1.5rem;
+    color: #ecf0f1;
+    text-decoration: none;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.nav-item:hover {
+    background: #34495e;
+    color: #fff;
+    text-decoration: none;
+}
+
+.nav-item.active {
+    background: #3498db;
+    color: #fff;
+}
+
+.nav-item i {
+    width: 20px;
+    text-align: center;
+}
+
+.admin-main {
+    flex-grow: 1;
+    padding: 2rem;
+    background: #f8f9fa;
+    overflow-y: auto;
+}
+
+/* Search Bar */
+.search-bar {
+    margin-bottom: 1.5rem;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+/* Email Form */
+.email-form {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.email-form .form-group {
+    margin-bottom: 1rem;
+}
+
+.email-form label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.email-form textarea {
+    min-height: 200px;
+}
+
+/* User Table Improvements */
+.user-table {
+    margin-top: 1rem;
+}
+
+.user-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+}
+
+.user-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Dashboard Cards */
+.card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    background-color: #fff;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    padding: 1rem 1.5rem;
+}
+
+/* Email Form Improvements */
+.email-form .form-control {
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 0.75rem;
+}
+
+.email-form select.form-control {
+    height: auto;
+    padding: 0.75rem;
+}
+
+/* Search Bar Improvements */
+.search-bar {
+    max-width: 300px;
+}
+
+.search-input {
+    padding: 0.5rem 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    width: 100%;
+    transition: border-color 0.15s ease-in-out;
+}
+
+.search-input:focus {
+    border-color: #3498db;
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+/* Role Requests Container */
+.role-requests-container {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .admin-layout {
+        flex-direction: column;
+    }
+    
+    .admin-sidebar {
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+    
+    .admin-main {
+        padding: 1rem;
+    }
+    
+    .role-requests-container {
+        grid-template-columns: 1fr;
+    }
+} 

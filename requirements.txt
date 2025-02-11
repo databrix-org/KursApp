@@ -1,0 +1,3 @@
+Django
+git+https://github.com/Brown-University-Library/django-shibboleth-remoteuser.git
+gunicorn

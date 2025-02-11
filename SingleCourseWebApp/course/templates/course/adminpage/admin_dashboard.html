@@ -1,0 +1,120 @@
+{% extends "course/adminpage/admin_base.html" %}
+{% load static %}
+
+
+{% block title %}Administrator-Dashboard{% endblock %}
+
+{% block admin_content %}
+<div class="container-fluid">
+    <!-- Tab content -->
+    {% if active_tab == 'users' %}
+        <!-- User Management Section -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="h5 mb-0">Benutzerverwaltung</h3>
+                <div class="search-bar">
+                    <input type="text" class="search-input" placeholder="Benutzer suchen...">
+                </div>
+            </div>
+            <div class="card-body">
+                <table id="usersTable" class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>E-Mail</th>
+                            <th>Aktuelle Rolle</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr data-user-id="{{ user.id }}">
+                            <td>{{ user.get_full_name }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                {% if user.is_superuser %}
+                                    Administrator
+                                {% elif user.is_instructor %}
+                                    Dozent
+                                {% else %}
+                                    Student
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-primary change-role" 
+                                            data-user-id="{{ user.id }}"
+                                            {% if user.is_superuser %}disabled{% endif %}>
+                                        Rolle ändern
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% elif active_tab == 'email' %}
+        <!-- Email Service Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="h5 mb-0">E-Mail-Service</h3>
+            </div>
+            <div class="card-body">
+                <form id="emailForm" class="email-form">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="emailSubject">Betreff</label>
+                        <input type="text" class="form-control" id="emailSubject" name="subject" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="emailRecipients">Empfänger</label>
+                        <select class="form-control" id="emailRecipients" name="recipients">
+                            <option value="all">Alle Benutzer</option>
+                            <option value="students">Alle Studenten</option>
+                            <option value="instructors">Alle Dozenten</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="emailContent">Nachricht</label>
+                        <textarea class="form-control" id="emailContent" name="content" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-3">E-Mail senden</button>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Role Change Modal -->
+<div class="modal fade" id="roleModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Benutzerrolle ändern</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="roleChangeForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Rolle auswählen</label>
+                        <select class="form-select" name="role">
+                            <option value="student">Student</option>
+                            <option value="instructor">Dozent</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                <button type="button" class="btn btn-primary" id="confirmRoleChange">Änderungen speichern</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% endblock %}

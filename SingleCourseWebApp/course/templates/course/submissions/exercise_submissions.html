@@ -1,0 +1,54 @@
+{% extends "course/submissions/dashboard_base.html" %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="mb-4">
+    <a href="{% url 'course:submissions_dashboard' %}" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left"></i> Zurück zur Übersicht
+    </a>
+</div>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>{{ exercise.lesson.title }} - Submissions</h2>
+            <p class="text-muted">Module: {{ exercise.lesson.module.title }}</p>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col">
+            <select id="submissionFilter" class="form-select">
+                <option value="">Alle Abgaben</option>
+                <option value="pending">Ausstehend</option>
+                <option value="graded">Bewertet</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <div class="table-responsive">
+                <table id="submissionsTable" class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Gruppe</th>
+                            <th>Eingereicht am</th>
+                            <th>Bewertung</th>
+                            <th>Dateien</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data will be loaded via AJAX -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="{% static 'course/js/exercise-submissions.js' %}"></script>
+{% endblock %}
+{% endblock %} 

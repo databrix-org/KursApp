@@ -1,0 +1,143 @@
+{% extends "course/submissions/dashboard_base.html" %}
+{% load static %}
+
+{% block extra_css %}
+{{ block.super }}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.css">
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="statistics-container">
+    <h2>Submission Statistics</h2>
+    
+    <!-- Summary Cards -->
+    <div class="statistics-summary">
+        <div class="stat-card">
+            <div class="stat-title">Total Groups</div>
+            <div class="stat-value">{{ group_stats_raw|length }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">Average Score</div>
+            <div class="stat-value">
+                {% with total_avg=0 %}
+                    {% for stat in group_stats_raw %}
+                        {% with total_avg=total_avg|add:stat.avg_score %}
+                        {% endwith %}
+                    {% endfor %}
+                    {{ total_avg|divisibleby:group_stats_raw|length|floatformat:1 }}
+                {% endwith %}
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">Total Submissions</div>
+            <div class="stat-value">
+                {% with total_subs=0 %}
+                    {% for stat in group_stats_raw %}
+                        {% with total_subs=total_subs|add:stat.submission_count %}
+                        {% endwith %}
+                    {% endfor %}
+                    {{ total_subs }}
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Grade Distribution Chart -->
+    <div class="chart-container">
+        <h3>Grade Distribution</h3>
+        <canvas id="gradeDistributionChart"></canvas>
+    </div>
+    
+    <!-- Group Performance Table -->
+    <div class="group-performance">
+        <h3>Group Performance</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Group</th>
+                    <th>Members</th>
+                    <th>Submissions</th>
+                    <th>Average Score</th>
+                    <th>Highest Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stat in group_stats_raw %}
+                <tr>
+                    <td>Group {{ stat.group.id }}</td>
+                    <td>
+                        <ul class="member-list">
+                            {% for member in stat.group.members %}
+                            <li>{{ member.name }}</li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                    <td>{{ stat.submission_count }}</td>
+                    <td>{{ stat.avg_score|floatformat:1 }}</td>
+                    <td>{{ stat.max_score|default:0|floatformat:1 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Parse the group stats from the server-rendered JSON
+        const groupStatsData = JSON.parse('{{ group_stats|escapejs }}');
+        
+        // Prepare data for grade distribution chart
+        const labels = groupStatsData.map(stat => `Group ${stat.group.id}`);
+        const avgScores = groupStatsData.map(stat => stat.avg_score);
+        const maxScores = groupStatsData.map(stat => stat.max_score);
+        
+        // Create grade distribution chart
+        const ctx = document.getElementById('gradeDistributionChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Average Score',
+                        data: avgScores,
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Highest Score',
+                        data: maxScores,
+                        backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Group Performance Distribution'
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %} 

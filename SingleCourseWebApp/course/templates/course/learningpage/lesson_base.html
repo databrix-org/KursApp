@@ -1,0 +1,32 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'course/css/base.css' %}">
+<link rel="stylesheet" href="{% static 'course/css/lesson_base.css' %}">
+<link rel="shortcut icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+
+<div class="lesson-page-container">
+    <div class="lesson-detail-container">
+        <h1 class="lesson-title" style="text-align: center;">{{ title }}</h1>
+        {% if lesson_type == 'reading' %}
+        {% include 'course/learningpage/lesson_types/reading.html' %}
+        {% elif lesson_type == 'video' %}
+        {% include 'course/learningpage/lesson_types/video.html' %}
+        {% elif lesson_type == 'exercise' %}
+        {% include 'course/learningpage/lesson_types/exercise.html' %}
+        {% endif %}
+
+        <div class="completion-button-container">
+            <button id="completeButton" class="complete-button" {% if progress.is_completed %}completed{% endif %}>
+                {% if progress.is_completed %}
+                    Completed
+                {% else %}
+                    Complete lesson
+                {% endif %}
+            </button>
+        </div>
+    </div>
+
+    {% include 'course/learningpage/lesson_sidebar.html' with current_lesson_id=lesson_id %}
+</div>
+
+<input type="hidden" id="lesson-id" value="{{ lesson_id }}">
+<script src="{% static 'course/js/lesson_base.js' %}"></script>

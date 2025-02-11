@@ -1,0 +1,156 @@
+/* Section Headers */
+.section-header {
+    background-color: #f8f9fa;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.section-header:hover {
+    background-color: #e9ecef;
+}
+
+/* Transition for collapse icon */
+.transition-icon {
+    transition: transform 0.3s ease;
+}
+
+.collapsed .transition-icon {
+    transform: rotate(180deg);
+}
+
+/* Module Info Section */
+.module-info {
+    background-color: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Form Controls */
+.form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+}
+
+/* Save Button */
+.btn-primary {
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Split View Layout */
+.split-view {
+    display: flex;
+    min-height: 500px;
+}
+
+.sidebar {
+    width: 300px;
+    border-right: 1px solid #dee2e6;
+    background: #f8f9fa;
+}
+
+.main-content {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.lessons-list {
+    height: calc(100vh - 250px);
+    overflow-y: auto;
+}
+
+.lesson-item {
+    cursor: pointer;
+    padding: 8px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.lesson-item:hover {
+    background-color: #e9ecef;
+}
+
+.lesson-item.active {
+    background-color: #e9ecef;
+}
+
+.lesson-item .drag-handle {
+    margin-right: 8px;
+    margin-left: -4px;
+}
+
+/* Module Title Quick Edit */
+.module-title-container {
+    flex: 1;
+}
+
+.modal-title {
+    cursor: pointer;
+}
+
+.modal-title:hover .bi-pencil-square {
+    opacity: 1;
+}
+
+.modal-title .bi-pencil-square {
+    opacity: 0.5;
+    transition: opacity 0.2s;
+    font-size: 0.8em;
+}
+
+.quick-edit-form {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 0.25rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Drag Handle Styling */
+.drag-handle {
+    cursor: grab;
+    color: #6c757d;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+}
+
+.drag-handle:hover {
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+.drag-handle .bi-grip-vertical {
+    font-size: 1.4em;
+    display: block;
+    transform: scale(1.2);
+}
+
+/* Update module card to show drag handle better */
+.module-card .drag-handle {
+    margin-right: 8px;
+    margin-left: -4px;
+}
+
+/* Style while dragging */
+.sortable-ghost {
+    opacity: 0.5;
+    background-color: #e9ecef;
+}
+
+.sortable-drag {
+    cursor: grabbing;
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.sortable-drag .drag-handle {
+    cursor: grabbing;
+} 

@@ -1,0 +1,40 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'course/css/lesson_sidebar.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<div class="lesson-sidebar" id="lessonSidebar">
+    <div class="header-container">
+        <button id="toggleSidebar" class="toggle-btn">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        <a href="/course/1/" class="back-link">
+            <h2><i class="fas fa-stream"></i> Zurück zur Übersicht</h2>
+        </a>
+    </div>
+
+    <div class="module-section">
+        <h3 class="module-header">
+            {{ current_module.title }}
+            <i class="fas fa-chevron-down module-toggle"></i>
+        </h3>
+        <ul class="module-content">
+            {% for lesson in modules_data.0.lessons %}
+                <li>
+                    <a href="{% url 'course:lesson_detail' lesson.lesson_id %}"
+                       {% if lesson.lesson_id == current_lesson_id %}class="active"{% endif %}>
+                        <span class="check-icon {% if not lesson.progress.is_completed %}uncompleted{% endif %}">
+                            {% if lesson.progress.is_completed %}
+                                <i class="fas fa-check-circle"></i>
+                            {% else %}
+                                <i class="far fa-circle"></i>
+                            {% endif %}
+                        </span>
+                        {{ lesson.lesson_title }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<script src="{% static 'course/js/lesson_sidebar.js' %}"></script> 

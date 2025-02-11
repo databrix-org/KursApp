@@ -1,0 +1,128 @@
+.lesson-page-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f8f9fa;
+}
+
+.lesson-detail-container {
+    flex: 1;
+    margin-right: 350px; /* Width of the sidebar */
+    padding: 2rem;
+    transition: margin 0.3s ease;
+    background-color: #ffffff;
+    min-height: 100vh;
+}
+
+.lesson-detail-container.sidebar-collapsed {
+    margin-right: 0;
+}
+
+.completion-button-container {
+    position: relative;
+    margin: 50px auto;
+    text-align: center;
+    width: fit-content;
+}
+
+.complete-button {
+    padding: 12px 24px;
+    border: 2px solid #373737;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 800;
+    transition: all 0.3s;
+}
+
+.complete-button:not([completed]) {
+    background-color: #373737;
+    color: white;
+}
+
+.complete-button:not([completed]):hover {
+    background-color: #626262;
+    color: white;
+}
+
+.complete-button[completed] {
+    background-color: white;
+    color: #373737;
+}
+
+.complete-button[completed]:hover {
+    background-color: #bdbdbd;
+}
+
+/* Lesson content styles */
+.reading-content {
+    line-height: 1.6;
+    font-size: 1.1rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.video-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.lesson-video {
+    width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.exercise-content {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.exercise-description {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.jupyter-exercise {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.exercise-materials {
+    margin-top: 2rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.exercise-materials h4 {
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.exercise-materials ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.exercise-materials li {
+    margin-bottom: 0.5rem;
+}
+
+.exercise-materials a {
+    color: #007bff;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.exercise-materials a:hover {
+    text-decoration: underline;
+}
