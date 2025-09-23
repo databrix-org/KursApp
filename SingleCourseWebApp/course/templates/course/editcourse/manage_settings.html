@@ -40,7 +40,28 @@
                                 <option value="1" {% if course.difficulty_level == 1 %}selected{% endif %}>Anfänger</option>
                                 <option value="2" {% if course.difficulty_level == 2 %}selected{% endif %}>Fortgeschritten</option>
                                 <option value="3" {% if course.difficulty_level == 3 %}selected{% endif %}>Experte</option>
+                                <option value="4" {% if course.difficulty_level == 4 %}selected{% endif %}>Profi</option>
+                                <option value="5" {% if course.difficulty_level == 5 %}selected{% endif %}>Demo</option>
                             </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="enrollmentKey" class="form-label">Einschreibeschlüssel</label>
+                            <input type="text" class="form-control" id="enrollmentKey" name="enrollment_key" 
+                                   value="{{ course.enrollment_key|default:'' }}" 
+                                   placeholder="z.B. databrix2023">
+                            <small class="text-muted">Dieser Schlüssel wird für die Kurseinschreibung benötigt und sollte mit dem Moodle-Einschreibeschlüssel identisch sein.</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="courseStartDate" class="form-label">Kurs-Startdatum</label>
+                            <input type="date" class="form-control" id="courseStartDate" name="start_date" 
+                                   value="{{ course.start_date|date:'Y-m-d' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="courseEndDate" class="form-label">Kurs-Enddatum (Abgabefrist)</label>
+                            <input type="date" class="form-control" id="courseEndDate" name="end_date" 
+                                   value="{{ course.end_date|date:'Y-m-d' }}">
+                            <small class="text-muted">Nach diesem Datum können Studierende keine Übungen mehr einreichen. Leer lassen für unbegrenzte Einreichungen.</small>
                         </div>
                         
                         <div class="mb-3">
@@ -59,34 +80,40 @@
                         <h4 class="mb-3">JupyterLab-Umgebung</h4>
                         <div class="mb-3">
                             <label for="jupyterImage" class="form-label">JupyterLab Image</label>
-                            <input type="text" class="form-control" id="jupyterImage" name="jupyterlab_image" 
-                                   placeholder="z.B. jupyter/datascience-notebook:latest"
-                                   value="{{ course.jupyterlab_image.image_name|default:'' }}">
-                            <small class="text-muted">Geben Sie den Docker Hub Image-Namen für die JupyterLab-Umgebung ein</small>
-                            {% if course.jupyterlab_image %}
-                            <div class="mt-2">
-                                <span class="text-success">
-                                    <i class="bi bi-check-circle"></i>
-                                    Aktuelles Image: {{ course.jupyterlab_image.image_name }}
-                                </span>
+                            <div class="input-group">
+                                <select class="form-select" id="jupyterImage" name="jupyterlab_image">
+                                    <option value="">Bitte wählen...</option>
+                                    {% for image in available_images %}
+                                    <option value="{{ image.image_name }}" {% if course.jupyterlab_image.image_name == image.image_name %}selected{% endif %}>{{ image.image_name }}</option>
+                                    {% endfor %}
+                                    {% if course.jupyterlab_image and course.jupyterlab_image not in available_images %}
+                                    <option value="{{ course.jupyterlab_image.image_name }}" selected>{{ course.jupyterlab_image.image_name }}</option>
+                                    {% endif %}
+                                </select>
+                                <button type="button" class="btn btn-outline-secondary" id="addCustomImageBtn">
+                                    <i class="bi bi-plus"></i> Neu
+                                </button>
                             </div>
-                            {% endif %}
+                            <small class="text-muted">Wählen Sie ein Docker Hub Image für die JupyterLab-Umgebung</small>
                         </div>
 
                         <div class="mb-3">
                             <label for="domainName" class="form-label">Virtuelle Maschine Domain</label>
-                            <input type="text" class="form-control" id="domainName" name="domain_name"
-                                   placeholder="z.B. jupyter.example.com"
-                                   value="{{ course.domain_name|default:'' }}">
-                            <small class="text-muted">Geben Sie den Domainnamen ein, unter dem JupyterHub gehostet wird (ohne http/https)</small>
-                            {% if course.domain_name %}
-                            <div class="mt-2">
-                                <span class="text-success">
-                                    <i class="bi bi-check-circle"></i>
-                                    Aktuelle Domain: {{ course.domain_name }}
-                                </span>
+                            <div class="input-group">
+                                <select class="form-select" id="domainName" name="domain_name">
+                                    <option value="">Bitte wählen...</option>
+                                    {% for domain in available_domains %}
+                                    <option value="{{ domain }}" {% if course.domain_name == domain %}selected{% endif %}>{{ domain }}</option>
+                                    {% endfor %}
+                                    {% if course.domain_name and course.domain_name not in available_domains %}
+                                    <option value="{{ course.domain_name }}" selected>{{ course.domain_name }}</option>
+                                    {% endif %}
+                                </select>
+                                <button type="button" class="btn btn-outline-secondary" id="addCustomDomainBtn">
+                                    <i class="bi bi-plus"></i> Neu
+                                </button>
                             </div>
-                            {% endif %}
+                            <small class="text-muted">Wählen Sie einen Domainnamen, unter dem JupyterHub gehostet wird (ohne http/https)</small>
                         </div>
                         
                         <div class="d-flex justify-content-end">
@@ -94,6 +121,56 @@
                         </div>
                     </form>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for adding custom JupyterLab image -->
+<div class="modal fade" id="addImageModal" tabindex="-1" aria-labelledby="addImageModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addImageModalLabel">Neues JupyterLab Image hinzufügen</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="customImageName" class="form-label">Docker Image Name</label>
+                    <input type="text" class="form-control" id="customImageName" placeholder="z.B. jupyter/datascience-notebook:latest">
+                    <div id="customImageNameFeedback" class="invalid-feedback">
+                        Bitte geben Sie einen gültigen Docker-Image-Namen ein.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                <button type="button" class="btn btn-primary" id="saveCustomImage">Hinzufügen</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for adding custom domain -->
+<div class="modal fade" id="addDomainModal" tabindex="-1" aria-labelledby="addDomainModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addDomainModalLabel">Neue Domain hinzufügen</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="customDomainName" class="form-label">Domain Name</label>
+                    <input type="text" class="form-control" id="customDomainName" placeholder="z.B. jupyter.example.com">
+                    <div id="customDomainNameFeedback" class="invalid-feedback">
+                        Bitte geben Sie einen gültigen Domainnamen ein.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                <button type="button" class="btn btn-primary" id="saveCustomDomain">Hinzufügen</button>
             </div>
         </div>
     </div>

@@ -6,7 +6,7 @@ from django.shortcuts import redirect
 from django.core.exceptions import ImproperlyConfigured
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
-
+from django.contrib import auth
 logger = logging.getLogger(__name__)
 User = get_user_model()
 
@@ -33,6 +33,7 @@ class CustomShibbolethMiddleware(ShibbolethRemoteUserMiddleware):
                     user = User.objects.get(email=email)
                     logger.debug(f"Found existing user with email {email}")
                     request.user = user
+                    #auth.login(request, user)
                     return None
                 except User.DoesNotExist:
                     logger.debug(f"No user found with email {email}, will create new user")
@@ -68,4 +69,3 @@ class CustomShibbolethMiddleware(ShibbolethRemoteUserMiddleware):
             email = request.META.get(self.header, '')
             return email.lower() if email else username.lower()
         return None
-

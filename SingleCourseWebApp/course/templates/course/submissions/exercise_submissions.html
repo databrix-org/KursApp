@@ -13,6 +13,10 @@
         <div class="col">
             <h2>{{ exercise.lesson.title }} - Submissions</h2>
             <p class="text-muted">Module: {{ exercise.lesson.module.title }}</p>
+            <div class="d-flex align-items-center mt-2">
+                <span class="badge bg-primary me-2">Maximale Punkte: {{ exercise.maximum_points }}</span>
+                <span class="badge bg-success">Bestehensgrenze: {{ exercise.pass_points }}</span>
+            </div>
         </div>
     </div>
 
@@ -20,8 +24,8 @@
         <div class="col">
             <select id="submissionFilter" class="form-select">
                 <option value="">Alle Abgaben</option>
-                <option value="pending">Ausstehend</option>
                 <option value="graded">Bewertet</option>
+                <option value="not_graded">Nicht bewertet</option>
             </select>
         </div>
     </div>
@@ -34,7 +38,8 @@
                         <tr>
                             <th>Gruppe</th>
                             <th>Eingereicht am</th>
-                            <th>Bewertung</th>
+                            <th>Punkte</th>
+                            <th>Status</th>
                             <th>Dateien</th>
                             <th>Aktionen</th>
                         </tr>

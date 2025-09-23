@@ -1,0 +1,45 @@
+---
+description: repo code structure
+globs: 
+alwaysApply: true
+---
+# SingleCourseWebApp Repository Documentation
+
+## Repository Overview
+
+SingleCourseWebApp is a Django-based web application for managing and delivering online courses with support for Shibboleth authentication. The application follows the Model-View-Template (MVT) architecture pattern of Django.
+
+## Project Structure
+
+```
+SingleCourseWebApp/
+├── app/                    # Main Django project configuration
+│   ├── settings.py         # Project settings and configuration
+│   ├── urls.py             # Main URL routing
+│   ├── wsgi.py             # WSGI configuration
+│   └── asgi.py             # ASGI configuration
+├── course/                 # Main application directory
+│   ├── models.py           # Database models
+│   ├── views.py            # View controllers
+│   ├── urls.py             # Application URL routing
+│   ├── forms.py            # Form definitions
+│   ├── admin.py            # Admin interface configuration
+│   ├── shibboleth_views.py # Shibboleth authentication views
+│   ├── shibboleth_urls.py  # Shibboleth authentication URLs
+│   ├── shib_middleware.py  # Shibboleth middleware
+│   ├── middleware.py       # Custom middleware
+│   ├── managers.py         # Custom model managers
+│   ├── templatetags/       # Custom template tags
+│   ├── tests/              # Test files
+│   ├── management/         # Custom management commands
+│   ├── migrations/         # Database migrations
+│   ├── templates/          # HTML templates
+│   └── static/             # Static files (CSS, JS, images)
+├── data/                   # Root directory for all data storage
+├── db/                     # Database files
+├── static/                 # Collected static files
+├── staticfiles/            # Static files for production
+├── manage.py               # Django management script
+├── requirements.txt        # Python dependencies
+└── README.md               # Project documentation
+```

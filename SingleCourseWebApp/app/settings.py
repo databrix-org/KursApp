@@ -12,9 +12,14 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+import logging
+import environ
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+env = environ.Env()
 
 
 # Quick-start development settings - unsuitable for production
@@ -24,18 +29,23 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'nc00o1hsog1j=az)u_unt1yvn5s#*ukuyueih9y9o%m#rmr6&r'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org',
-                  '127.0.0.1',
-                  'localhost',
-                  '193.196.55.219']
-
+                 'databrix.org',
+                 '127.0.0.1',
+                 'localhost',
+                 '193.196.55.219',
+                 env.get('ALLOWED_HOSTS')
+]
+                  
 CSRF_TRUSTED_ORIGINS = [
     'https://1985609f-7839-4819-8840-2d38548e4ea5.ma.bw-cloud-instance.org',
     'http://127.0.0.1',
     'http://localhost',
     'http://193.196.55.219',
+    'https://databrix.org',
+    env.get('CSRF_TRUSTED_ORIGINS')
 ]
 
 INSTALLED_APPS = [
@@ -47,7 +57,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'shibboleth',
     'course.apps.CourseConfig',
-    
 ]
 
 MIDDLEWARE = [
@@ -88,15 +97,23 @@ WSGI_APPLICATION = 'app.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+#DATABASES = {
+#   'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#        'NAME': os.path.join(BASE_DIR, 'db', 'db.sqlite3'),
+#    }
+#}
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db', 'db.sqlite3'),
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "webapp-db",
+        "USER": "postgres",
+        "PASSWORD": "databrix",
+        "HOST": "singlekursweb-database",
     }
 }
 
-
-# Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -118,9 +135,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'de-de'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Berlin'
 
 USE_I18N = True
 
@@ -147,7 +164,7 @@ SHIBBOLETH_ATTRIBUTE_MAP = {
     "HTTP_GIVENNAME": (True, "first_name"),
     "HTTP_SN": (True, "last_name"),
     "HTTP_UID": (True, "username"),
-    "HTTP_UNSCOPEDAFFILIATION": (False, "affiliation"),
+    "HTTP_UNSCOPED_AFFILIATION": (False, "affiliation"),
 }
 
 # Add this setting to specify which attributes are required
@@ -203,6 +220,7 @@ LOGGING = {
             'class': 'logging.FileHandler',
             'filename': 'debug.log',
             'formatter': 'verbose',
+            'encoding': 'utf-8',
         },
     },
     'loggers': {
@@ -215,6 +233,16 @@ LOGGING = {
             'handlers': ['console', 'file'],
             'level': 'DEBUG',
             'propagate': True,
+        },
+        'course.views': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django.core.mail': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': False,
         },
     },
 }
@@ -270,9 +298,9 @@ STORAGES = {
 }
 
 # File Upload Settings
-FILE_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024 * 1024  # 1GB
-DATA_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024 * 1024  # 1GB
-MAX_UPLOAD_SIZE = 1024 * 1024 * 1024  # 1GB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024 * 1024  # 2GB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024 * 1024  # 2GB
+MAX_UPLOAD_SIZE = 2 * 1024 * 1024 * 1024  # 2GB
 
 # Temporary file settings
 FILE_UPLOAD_TEMP_DIR = os.path.join(DATA_ROOT, 'tmp')
@@ -286,11 +314,27 @@ SESSION_COOKIE_SECURE = True
 SECURE_BROWSER_XSS_FILTER = True
 
 
-# Email Settings
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # For development
-EMAIL_HOST = 'smtp.gmail.com'
+# Email Settings using AWS SES
+# EMAIL_BACKEND = 'django_ses.SESBackend'
+# DEFAULT_FROM_EMAIL = 'info@databrix.org'
+# These are optional if you are using AWS IAM Roles https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html
+# AWS_ACCESS_KEY_ID = 'AKIA'
+# AWS_SECRET_ACCESS_KEY = 'Ll4If'
+# https://docs.aws.amazon.com/cli/v1/userguide/cli-configure-files.html
+# AWS_SESSION_PROFILE = 'YOUR-PROFILE-NAME'
+# Additionally, if you are not using the default AWS region of us-east-1,
+# you need to specify a region, like so:
+# AWS_SES_REGION_NAME = 'eu-west-1'
+# AWS_SES_REGION_ENDPOINT = 'email.eu-west-1.amazonaws.com'
+
+# Email Settings using Brevo
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'securesmtp.t-online.de'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'admin@databrix.com'
-EMAIL_HOST_PASSWORD = 'Databrix123!'
-DEFAULT_FROM_EMAIL = 'admin@databrix.com'
+
+
+EMAIL_HOST_PASSWORD = "Databrix-2025"
+SUPPORT_EMAIL = ["yuqiang.gu@dhbw-stuttgart.de","udo.heuser@dhbw-stuttgart.de"]
+DEFAULT_FROM_EMAIL = "dhbw-stuttgart@t-online.de"
+EMAIL_HOST_USER = "dhbw-stuttgart@t-online.de"

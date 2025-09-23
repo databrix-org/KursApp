@@ -78,7 +78,12 @@ async function handleSubmission(lessonId) {
                 submissionTable.appendChild(newRow);
             }
         } else {
-            throw new Error(data.error || 'Einreichung fehlgeschlagen');
+            // Check if it's a deadline-related error for better user experience
+            if (data.error && data.error.includes('Abgabefrist')) {
+                alert('⚠️ Abgabefrist abgelaufen!\n\n' + data.error);
+            } else {
+                throw new Error(data.error || 'Einreichung fehlgeschlagen');
+            }
         }
     } catch (error) {
         alert('Fehler bei der Einreichung der Übung: ' + error.message);
@@ -117,9 +122,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (submitBtn) {
         const lessonId = submitBtn.dataset.lessonId;
         submitBtn.addEventListener('click', () => {
-            if (confirm('Sind Sie sicher, dass Sie diese Übung einreichen möchten? Diese Aktion kann nicht rückgängig gemacht werden.')) {
-                handleSubmission(lessonId);
+            // Check if button is disabled (deadline passed)
+            if (submitBtn.disabled) {
+                alert('⚠️ Einreichungen sind nicht mehr möglich!\n\nDie Abgabefrist für diesen Kurs ist bereits abgelaufen.');
+                return;
             }
+            
+            // Create and show custom confirmation modal instead of basic confirm
+            showSubmissionConfirmModal(lessonId);
         });
     }
 
@@ -170,4 +180,87 @@ document.addEventListener('DOMContentLoaded', function() {
             window.open(jupyterHubUrl, '_blank');
         });
     }
-}); 
+});
+
+/**
+ * Shows a custom confirmation modal for exercise submission
+ * @param {number} lessonId - The ID of the lesson being submitted
+ */
+function showSubmissionConfirmModal(lessonId) {
+    // Create modal elements
+    const modalOverlay = document.createElement('div');
+    modalOverlay.className = 'modal-overlay';
+    
+    const modalContent = document.createElement('div');
+    modalContent.className = 'modal-content submission-confirm-modal';
+    
+    // Add modal HTML content
+    modalContent.innerHTML = `
+        <div class="modal-header">
+            <h5 class="modal-title">Übung einreichen</h5>
+            <button type="button" class="close-modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>Achtung: Durch diese Einreichung wird Ihre vorherige Version überschrieben.</span>
+            </div>
+            <p>Sind Sie sicher, dass Sie diese Übung jetzt einreichen möchten?</p>
+            <p class="text-muted small">Diese Aktion kann nicht rückgängig gemacht werden.</p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary cancel-btn">Abbrechen</button>
+            <button type="button" class="btn btn-primary confirm-btn">Einreichen</button>
+        </div>
+    `;
+    
+    // Append modal to body
+    modalOverlay.appendChild(modalContent);
+    document.body.appendChild(modalOverlay);
+    
+    // Show modal with animation
+    setTimeout(() => {
+        modalOverlay.classList.add('show');
+        modalContent.classList.add('show');
+    }, 10);
+    
+    // Add event listeners
+    const closeBtn = modalContent.querySelector('.close-modal');
+    const cancelBtn = modalContent.querySelector('.cancel-btn');
+    const confirmBtn = modalContent.querySelector('.confirm-btn');
+    
+    // Close modal function
+    const closeModal = () => {
+        modalOverlay.classList.remove('show');
+        modalContent.classList.remove('show');
+        
+        // Remove modal after animation completes
+        setTimeout(() => {
+            document.body.removeChild(modalOverlay);
+        }, 300);
+    };
+    
+    // Add event listeners
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+    confirmBtn.addEventListener('click', () => {
+        closeModal();
+        handleSubmission(lessonId);
+    });
+    
+    // Close on outside click
+    modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) {
+            closeModal();
+        }
+    });
+    
+    // Close on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+        }
+    }, { once: true });
+} 

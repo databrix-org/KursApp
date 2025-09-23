@@ -31,6 +31,16 @@
     overflow: hidden;
 }
 
+.btn-continue i {
+    margin-right: 0.5rem;
+}
+
+.btn-continue:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3),
+                0 8px 16px rgba(33, 150, 243, 0.2);
+}
+
 .progress-container {
     margin-bottom: 1rem;
 }
@@ -57,6 +67,282 @@
     transition: width 0.3s ease;
 }
 
+/* Module Card Styles */
+.modules-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem;
+}
+
+.module-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    padding: 1.5rem;
+    border: 1px solid #e0e0e0;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.module-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    border-color: #2196F3;
+}
+
+.module-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0 0 1rem 0;
+    position: relative;
+    padding-left: 1.5rem;
+}
+
+.module-exercise-indicator {
+    display: inline-block;
+    margin: 0 0 1rem 1.5rem;
+    padding: 4px 10px;
+    background-color: #FF9800;
+    color: white;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.module-exercise-indicator i {
+    margin-right: 5px;
+}
+
+.module-info {
+    display: flex;
+    align-items: center;
+    margin-top: 0.5rem;
+    color: #64748b;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.module-lessons-count {
+    display: flex;
+    align-items: center;
+    font-size: 0.95rem;
+    padding-left: 1.5rem;
+    position: relative;
+}
+
+.module-lessons-count:before {
+    content: '\f15c';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 400;
+    position: absolute;
+    left: 0;
+    color: #94a3b8;
+}
+
+.module-duration {
+    font-size: 0.95rem;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+}
+
+.module-duration i {
+    margin-right: 0.5rem;
+    color: #94a3b8;
+}
+
+.module-progress-info {
+    margin-top: 0.75rem;
+    padding-left: 1.5rem;
+}
+
+.module-completion-status {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.module-completion-status.complete {
+    color: #4CAF50; /* Green for 100% complete */
+}
+
+.module-completion-status.in-progress {
+    color: #FF9800; /* Orange for partially complete */
+}
+
+.module-completion-status.not-started {
+    color: #FF9800; /* Red for not started */
+}
+
+.exercise-completion {
+    display: block;
+    margin-top: 8px;
+    font-size: 0.85rem;
+    padding-left: 0.5rem;
+    border-left: 3px solid #2196F3;
+}
+
+/* Add hover effect for better feedback */
+.module-card:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #2196F3, #64B5F6);
+    transition: width 0.3s ease;
+}
+
+.module-card:hover:after {
+    width: 100%;
+}
+
+.module-card-arrow {
+    position: absolute;
+    right: 1.5rem;
+    bottom: 1.5rem;
+    color: #64B5F6;
+    opacity: 0.7;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.module-card:hover .module-card-arrow {
+    transform: translateX(5px);
+    color: #2196F3;
+    opacity: 1;
+}
+
+/* Modal header styles */
+.modal-header {
+    border-bottom: 1px solid #e0e0e0;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#modalModuleTitle {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #2c3e50;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #94a3b8;
+    transition: color 0.2s ease;
+}
+
+.modal-close:hover {
+    color: #2196F3;
+}
+
+.modal-body {
+    padding: 1rem 0;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.modal-lessons-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Alternate row colors for better readability */
+.modal-lesson-item:nth-child(odd) {
+    background-color: #f8fafc;
+}
+
+.modal-lesson-item {
+    border-bottom: 1px solid #edf2f7;
+}
+
+.modal-lesson-link {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    text-decoration: none;
+    color: #333;
+    transition: all 0.2s ease;
+}
+
+.modal-lesson-link:hover {
+    background-color: #e3f2fd;
+}
+
+.modal-lesson-check {
+    margin-right: 1rem;
+    font-size: 1.2rem;
+}
+
+.modal-lesson-title {
+    flex: 1;
+    font-weight: 500;
+}
+
+.modal-lesson-duration {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin-left: 1rem;
+}
+
+.modal-lesson-type {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    margin-right: 0.75rem;
+    font-size: 0.9rem;
+}
+
+.modal-lesson-type.type-exercise {
+    color: #fff;
+    background-color: #FF9800;
+}
+
+.modal-lesson-type.type-video {
+    color: #fff;
+    background-color: #F44336;
+}
+
+.modal-lesson-type.type-reading {
+    color: #fff;
+    background-color: #4CAF50;
+}
+
+.modal-lesson-link:hover .modal-lesson-title {
+    color: #2196F3;
+}
+
+/* For responsiveness */
+@media (min-width: 768px) {
+    .modules-list {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+}
+
+@media (min-width: 1200px) {
+    .modules-list {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Keep existing styles */
 .module {
     border: none;
     border-radius: 0;
@@ -134,6 +420,42 @@ details[open] .expand-icon {
     color: #666;
 }
 
+/* Specifically target the far-circle icon for uncompleted lessons */
+.check-icon.uncompleted i.far.fa-circle {
+    color: white;
+    background-color: white;
+    border-radius: 50%;
+    border: 2px solid #666;
+    position: relative;
+    width: 1.1rem;
+    height: 1.1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+/* Additional general selector to catch all variants of circle icons */
+.check-icon.uncompleted i[class*="circle"] {
+    color: white;
+    background-color: white;
+    border-radius: 50%;
+    border: 2px solid #666;
+    position: relative;
+    width: 1.1rem;
+    height: 1.1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+.check-icon.uncompleted i.far.fa-circle::before,
+.check-icon.uncompleted i[class*="circle"]::before {
+    content: "";
+    display: none;
+} 
+
 .lesson-duration {
     margin-left: auto;
     color: #666;
@@ -176,6 +498,13 @@ details[open] .expand-icon {
     font-size: 1.5rem;
     color: #2c3e50;
     font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+.content-header h2 i {
+    margin-right: 0.5rem;
+    color: #2196F3;
 }
 
 .content-summary {
@@ -185,18 +514,6 @@ details[open] .expand-icon {
 
 .modules-list {
     padding: 1rem;
-}
-
-.module {
-    margin-bottom: 1rem;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease;
-}
-
-.module-header:hover {
-    background: linear-gradient(to right, #f1f5f9, #f8fafc);
 }
 
 .lesson-item {
@@ -230,4 +547,186 @@ details[open] .expand-icon {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
     background: #f8f9fa;
+}
+
+/* Modal Styles */
+.lessons-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.lessons-modal.show {
+    display: block;
+    opacity: 1;
+}
+
+.lessons-modal-content {
+    background-color: #fff;
+    margin: 10vh auto;
+    max-width: 600px;
+    width: 90%;
+    border-radius: 12px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+    position: relative;
+    transform: translateY(-20px);
+    transition: transform 0.3s ease;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.lessons-modal.show .lessons-modal-content {
+    transform: translateY(0);
+}
+
+.lessons-modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.lessons-modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #2c3e50;
+}
+
+.modal-close {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.modal-close:hover {
+    color: #2196F3;
+}
+
+.lessons-modal-body {
+    padding: 0;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+.modal-lesson-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.modal-lesson-item {
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.modal-lesson-link {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    color: #333;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.modal-lesson-link:hover {
+    background-color: #f5f7fa;
+}
+
+.modal-lesson-check {
+    color: #43a047;
+    margin-right: 1rem;
+    font-size: 1.2rem;
+}
+
+.modal-lesson-check.uncompleted {
+    color: #94a3b8;
+}
+
+.modal-lesson-title {
+    flex-grow: 1;
+    font-weight: 500;
+}
+
+.modal-lesson-duration {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin-left: 1rem;
+}
+
+.modal-lesson-link:hover .modal-lesson-title {
+    color: #2196F3;
+}
+
+/* Utility Classes */
+.mr-2 {
+    margin-right: 0.5rem;
+}
+
+.ml-2 {
+    margin-left: 0.5rem;
+}
+
+.mt-2 {
+    margin-top: 0.5rem;
+}
+
+.mb-2 {
+    margin-bottom: 0.5rem;
+}
+
+/* Module difficulty badges */
+.badge {
+    display: inline-block;
+    padding: 0.35em 0.65em;
+    font-size: 0.75em;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 0.25rem;
+}
+
+.bg-success {
+    background-color: #28a745 !important;
+    color: white !important;
+}
+
+.bg-primary {
+    background-color: #007bff !important;
+    color: white !important;
+}
+
+.bg-warning {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+}
+
+.bg-danger {
+    background-color: #dc3545 !important;
+    color: white !important;
+}
+
+.bg-secondary {
+    background-color: #6c757d !important;
+    color: white !important;
+}
+
+.ms-2 {
+    margin-left: 0.5rem !important;
+}
+
+.me-1 {
+    margin-right: 0.25rem !important;
 } 

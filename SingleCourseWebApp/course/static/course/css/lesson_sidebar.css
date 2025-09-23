@@ -168,4 +168,40 @@
 
 .check-icon.uncompleted {
     color: #666;
+}
+
+/* Specifically target the far-circle icon for uncompleted lessons */
+.check-icon.uncompleted i.far.fa-circle {
+    color: white;
+    background-color: white;
+    border-radius: 50%;
+    border: 2px solid #666;
+    position: relative;
+    width: 1.1rem;
+    height: 1.1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+/* Additional general selector to catch all variants of circle icons */
+.check-icon.uncompleted i[class*="circle"] {
+    color: white;
+    background-color: white;
+    border-radius: 50%;
+    border: 2px solid #666;
+    position: relative;
+    width: 1.1rem;
+    height: 1.1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+.check-icon.uncompleted i.far.fa-circle::before,
+.check-icon.uncompleted i[class*="circle"]::before {
+    content: "";
+    display: none;
 } 

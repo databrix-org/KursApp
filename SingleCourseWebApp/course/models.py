@@ -8,8 +8,8 @@ import os
 
 def validate_file_size(value):
     filesize = value.size
-    if filesize > 1024 * 1024 * 1024:  # 1GB limit
-        raise ValidationError("The maximum file size that can be uploaded is 1GB")
+    if filesize > 2 * 1024 * 1024 * 1024:  # 2GB limit
+        raise ValidationError("The maximum file size that can be uploaded is 2GB")
     return value
 
 def get_jupyterlab_image_path(instance, filename):
@@ -79,6 +79,20 @@ def get_reference_solution_path(instance, filename):
     """
     return os.path.join('reference_solution',  filename)
 
+def get_ticket_image_path(instance, filename):
+    """Generate file path for ticket images.
+    
+    Args:
+        instance: Ticket model instance
+        filename: Original filename
+        
+    Returns:
+        str: Path where the file should be stored
+    """
+    return os.path.join('ticket_images', f'ticket_{instance.id}_{filename}')
+
+
+
 # Create your models here.
 class CustomUserModel(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(_("Email Address"), unique=True, max_length=255)
@@ -131,6 +145,7 @@ class Course(models.Model):
         (2, 'Intermediate'),
         (3, 'Advanced'),
         (4, 'Professional'),
+        (5, 'Demo'),
     )
     title = models.CharField(max_length=255, default="Untitled Course")
     description = models.TextField(default="No description")
@@ -142,6 +157,8 @@ class Course(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    start_date = models.DateField(null=True, blank=True, help_text="Course start date")
     end_date = models.DateField(null=True, blank=True, help_text="Course end date")
     difficulty_level = models.IntegerField(
         choices=DIFFICULTY_CHOICES,
@@ -158,6 +175,12 @@ class Course(models.Model):
         blank=True,
         null=True,
         help_text="Domain name of the virtual machine where JupyterHub is hosted"
+    )
+    enrollment_key = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text="Enrollment key required for students to join the course"
     )
 
     class Meta:
@@ -208,6 +231,11 @@ class Module(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
     order = models.PositiveIntegerField()
+    difficulty_level = models.IntegerField(
+        choices=Course.DIFFICULTY_CHOICES,
+        default=1,
+        help_text="Module difficulty level"
+    )
 
     class Meta:
         ordering = ['order']
@@ -308,6 +336,14 @@ class Exercise(models.Model):
         default='traditional',
         help_text="Type of exercise"
     )
+    maximum_points = models.PositiveIntegerField(
+        default=10,
+        help_text="Maximum points students can earn from the exercise"
+    )
+    pass_points = models.PositiveIntegerField(
+        default=0,
+        help_text="Minimum points required for students to pass the exercise"
+    )
     jupyterhub_url = models.URLField(
         blank=True, 
         null=True, 
@@ -331,6 +367,8 @@ class Exercise(models.Model):
             raise ValidationError("Jupyter notebook exercises must use .ipynb files")
         if self.reference_solution and not self.reference_solution.name.endswith('.ipynb'):
             raise ValidationError("Reference solution must be a Jupyter notebook (.ipynb) file")
+        if self.maximum_points < self.pass_points:
+            raise ValidationError("Maximum points must be greater than or equal to pass points")
 
 class ExerciseMaterial(models.Model):
     exercise = models.ForeignKey(Exercise, on_delete=models.CASCADE, related_name='materials')
@@ -363,6 +401,11 @@ class JupyterLabImage(models.Model):
 
 class Group(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='groups')
+    group_number = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Sequential group number starting from 1, automatically assigned"
+    )
     members = models.ManyToManyField(
         CustomUserModel,
         related_name='course_groups',
@@ -375,13 +418,35 @@ class Group(models.Model):
         indexes = [
             models.Index(fields=['course']),
             models.Index(fields=['created_at']),
+            models.Index(fields=['course', 'group_number']),
         ]
-        ordering = ['-created_at']
+        ordering = ['course', 'group_number']
         verbose_name = _("Group")
         verbose_name_plural = _("Groups")
+        constraints = [
+            models.UniqueConstraint(
+                fields=['course', 'group_number'],
+                name='unique_group_number_per_course'
+            )
+        ]
 
     def __str__(self):
-        return f"Group {self.id} - {self.course.title} ({self.members.count()} members)"
+        return f"Group {self.group_number} - {self.course.title} ({self.members.count()} members)"
+
+    def _get_next_group_number(self):
+        """Get the next available group number for this course."""
+        existing_numbers = set(
+            Group.objects.filter(course=self.course)
+            .exclude(pk=self.pk)  # Exclude current instance if updating
+            .exclude(group_number__isnull=True)  # Exclude groups without numbers
+            .values_list('group_number', flat=True)
+        )
+        
+        # Find the first available number starting from 1
+        number = 1
+        while number in existing_numbers:
+            number += 1
+        return number
 
     def clean(self):
         # Skip member validation for new groups (not yet saved)
@@ -411,6 +476,10 @@ class Group(models.Model):
                 })
 
     def save(self, *args, **kwargs):
+        # Auto-assign group number if not set
+        if self.group_number is None:
+            self.group_number = self._get_next_group_number()
+        
         self.full_clean()
         super().save(*args, **kwargs)
 
@@ -477,13 +546,20 @@ class Submission(models.Model):
         ).first()
         if not group:
             raise ValidationError("Student must be in a group to submit exercises")
+            
+    def save(self, *args, **kwargs):
+        # If score is set, determine if passed based on exercise pass_points
+        if self.score is not None:
+            self.passed = self.score >= self.exercise.pass_points
+        super().save(*args, **kwargs)
 
 class SubmissionFile(models.Model):
     submission = models.ForeignKey(Submission, on_delete=models.CASCADE, related_name='files')
     file = models.FileField(
         upload_to=get_submission_file_path,
         validators=[validate_file_size],
-        help_text="A file submitted by the student"
+        help_text="A file submitted by the student",
+        max_length=255
     )
     description = models.CharField(max_length=255, blank=True, help_text="Optional description of the file")
     uploaded_at = models.DateTimeField(auto_now_add=True)
@@ -524,4 +600,57 @@ class LessonProgress(models.Model):
 
     def __str__(self):
         return f"{self.student.get_full_name()} - {self.lesson.title} Progress"
+
+class Ticket(models.Model):
+    STATUS_CHOICES = (
+        ('open', 'Open'),
+        ('in_progress', 'In Progress'),
+        ('closed', 'Closed'),
+    )
+
+    user = models.ForeignKey(
+        CustomUserModel,
+        on_delete=models.CASCADE,
+        related_name='tickets'
+    )
+    subject = models.CharField(max_length=255)
+    description = models.TextField()
+    image = models.ImageField(
+        upload_to=get_ticket_image_path,
+        null=True,
+        blank=True,
+        help_text="Optional image to help describe the issue",
+        validators=[validate_file_size]
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='open'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    assigned_to = models.ForeignKey(
+        CustomUserModel,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='assigned_tickets',
+        limit_choices_to={'is_staff': True, 'is_superuser': True}
+    )
+    resolution_notes = models.TextField(blank=True, null=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user']),
+            models.Index(fields=['status']),
+            models.Index(fields=['created_at']),
+        ]
+
+    def __str__(self):
+        return f"Ticket #{self.id} - {self.subject} ({self.status})"
+
+    def can_edit_status(self, user):
+        """Check if a user can edit the ticket status."""
+        return user.is_staff or user.is_instructor
 

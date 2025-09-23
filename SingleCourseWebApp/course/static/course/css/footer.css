@@ -1,0 +1,124 @@
+/* Footer Styles */
+.site-footer {
+    background-color: #f8f9fa;
+    padding: 1rem 0;
+    border-top: 1px solid #e9ecef;
+    margin-top: auto;
+    width: 100%;
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.footer-links a {
+    margin-right: 1.5rem;
+    color: #495057;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+    color: #007bff;
+    text-decoration: underline;
+}
+
+.footer-copyright {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+/* Modal Styles */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #212529;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    cursor: pointer;
+    color: #6c757d;
+}
+
+.close-btn:hover {
+    color: #212529;
+}
+
+.modal-body {
+    padding: 1.5rem;
+    line-height: 1.6;
+}
+
+.modal-body p {
+    margin-bottom: 1rem;
+}
+
+.modal-body a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.modal-body a:hover {
+    text-decoration: underline;
+}
+
+.modal-body h4 {
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: #343a40;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .footer-container {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .footer-links {
+        margin-bottom: 0.5rem;
+    }
+    
+    .footer-links a {
+        margin: 0 0.75rem;
+    }
+} 

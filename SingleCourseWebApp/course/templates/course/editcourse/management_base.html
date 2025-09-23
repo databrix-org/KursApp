@@ -23,8 +23,8 @@
                        href="{% url 'course:manage_course' course.id %}?option=modules">Module</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {% if active_tab == 'groups' %}active{% endif %}" 
-                       href="{% url 'course:manage_course' course.id %}?option=groups">Gruppen</a>
+                    <a class="nav-link {% if active_tab == 'teams' %}active{% endif %}" 
+                       href="{% url 'course:manage_course' course.id %}?option=teams">Teams</a>
                 </li>
             </ul>
         </div>

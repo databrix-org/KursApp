@@ -1,0 +1,26 @@
+---
+description: rules for admin template
+globs: admin_dashboard.html,admin_base.html
+alwaysApply: false
+---
+### 6. Admin Interface
+
+#### 6.1 Admin Base
+
+**Template:** `course/templates/course/adminpage/admin_base.html`
+
+**Description:** Base template for admin pages.
+
+**Data Context:**
+- `user`: Current admin user object
+
+#### 6.2 Admin Dashboard
+
+**Template:** `course/templates/course/adminpage/admin_dashboard.html`
+
+**Description:** Dashboard for administrative functions.
+
+**Data Context:**
+- `users`: List of user objects
+- `courses`: List of course objects
+- `stats`: Dictionary of system statistics

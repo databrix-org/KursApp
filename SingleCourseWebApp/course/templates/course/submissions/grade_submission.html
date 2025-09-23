@@ -65,11 +65,11 @@
     }
     .diff-added {
         background-color: #e6ffec;
-        border-left: 4px solid #2ea043;
+        border-left: 4px solid #cf222e;
     }
     .diff-removed {
         background-color: #ffebe9;
-        border-left: 4px solid #cf222e;
+        border-left: 4px solid #2ea043;
     }
     .diff-unchanged {
         background-color: #ffffff;
@@ -257,13 +257,13 @@
                     <input type="file" id="referenceUpload" accept=".ipynb" class="d-none">
                     <button class="btn btn-outline-primary" onclick="document.getElementById('referenceUpload').click()">
                         {% if has_reference_solution %}
-                            <i class="fas fa-sync"></i> Change Reference Solution
+                            <i class="fas fa-sync"></i> Referenzlösung ändern
                         {% else %}
-                            <i class="fas fa-upload"></i> Upload Reference Solution
+                            <i class="fas fa-upload"></i> Referenzlösung hochladen
                         {% endif %}
                     </button>
                     {% if has_reference_solution %}
-                        <span class="badge bg-info ms-2">Reference Solution Available</span>
+                        <span class="badge bg-info ms-2">Referenzlösung verfügbar</span>
                     {% endif %}
                 </div>
             </div>
@@ -304,10 +304,18 @@
             <div class="col-md-4 mt-3">
                 <div class="form-group">
                     <label for="score">Punkte</label>
-                    <input type="number" class="form-control" id="score" name="score" 
-                           min="0" max="100" step="0.1" required
-                           value="{{ submission.score|default:'' }}"
-                           style="font-size: 1.2rem; padding: 12px;">
+                    <div class="input-group">
+                        <input type="number" class="form-control" id="score" name="score" 
+                               min="0" max="{{ exercise.maximum_points }}" step="0.1" required
+                               value="{{ submission.score|default:'' }}"
+                               style="font-size: 1.2rem; padding: 12px;">
+                        <div class="input-group-append">
+                            <span class="input-group-text">/ {{ exercise.maximum_points }}</span>
+                        </div>
+                    </div>
+                    <small class="form-text text-muted">
+                        Bestehensgrenze: {{ exercise.pass_points }} Punkte
+                    </small>
                 </div>
             </div>
             <div class="col-12 mt-3">

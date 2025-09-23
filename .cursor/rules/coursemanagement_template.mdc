@@ -1,0 +1,99 @@
+---
+description: Rules for course_managemenr tempates
+globs: management_base.html,management.css,manage_modules.html,manage-modules.js,manage-modules.css,manage_settings.html,manage-settings.js,management.css,manage_groups.html,manage_groups.css,
+alwaysApply: false
+---
+# SingleCourseWebApp Template Documentation
+
+This document provides a comprehensive guide to the template (html) files in the SingleCourseWebApp Django application, including their relationships with JavaScript and CSS files. The data passed into these template files come from views.py.
+
+## Template Structure Overview
+
+The templates in this application follow a hierarchical structure:
+
+```
+course/templates/course/
+├── adminpage/                # Admin interface templates
+├── editcourse/               # Course management templates
+├── homepage/                 # Home page templates
+├── learningpage/             # Learning interface templates
+│   └── lesson_types/         # Specific lesson type templates
+└── submissions/              # Submission management templates
+```
+
+## Template-JavaScript-CSS Relationships
+
+### 2. Course Management
+
+#### 2.1 Management Base
+
+**Template:** `course/templates/course/editcourse/management_base.html`
+
+**Description:** Base template for all course management pages. Provides the common layout and navigation.
+
+**CSS Dependencies:**
+- `course/static/course/css/management.css`
+  - Styling for management navigation
+  - Styling for management layout
+
+**Data Context:**
+- `course`: Course object being managed
+
+#### 2.2 Module Management
+
+**Template:** `course/templates/course/editcourse/manage_modules.html`
+
+**Description:** Interface for managing course modules and lessons.
+
+**JavaScript Dependencies:**
+- `course/static/course/js/manage-modules.js`
+  - `ModuleManager`: Handles module CRUD operations
+  - `LessonManager`: Handles lesson CRUD operations
+  - `DragDropManager`: Provides drag-and-drop reordering
+
+**CSS Dependencies:**
+- `course/static/course/css/manage-modules.css`
+  - Styling for module cards
+  - Styling for lesson items
+  - Styling for drag-and-drop functionality
+
+**Data Context:**
+- `course`: Course object being managed
+- `modules`: List of module objects
+- `csrf_token`: CSRF token for form submission
+
+#### 2.3 Course Settings
+
+**Template:** `course/templates/course/editcourse/manage_settings.html`
+
+**Description:** Interface for managing course settings.
+
+**JavaScript Dependencies:**
+- `course/static/course/js/manage-settings.js`
+  - Handles form submission
+  - Manages course settings updates
+
+**CSS Dependencies:**
+- `course/static/course/css/management.css`
+  - Styling for settings forms
+
+**Data Context:**
+- `course`: Course object being managed
+- `form`: Form object for course settings
+
+#### 2.4 Group Management
+
+**Template:** `course/templates/course/editcourse/manage_groups.html`
+
+**Description:** Interface for managing student groups.
+
+**CSS Dependencies:**
+- `course/static/course/css/manage_groups.css`
+  - Styling for group cards
+  - Styling for member lists
+  - Styling for group actions
+
+**Data Context:**
+- `course`: Course object being managed
+- `groups`: List of group objects
+- `students`: List of student objects

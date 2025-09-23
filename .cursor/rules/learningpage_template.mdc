@@ -1,0 +1,133 @@
+---
+description: Rules for learning page template
+globs: learn.html,learn.js,learn.css,lesson_base.html,lesson_base.js,lesson_base.css,lesson_sidebar.html,lesson_sidebar.js,lesson_sidebar.css,video.html,reading.html,exercise.html,exercise.js,file_upload.js,exercise.css
+alwaysApply: false
+---
+# SingleCourseWebApp Template Documentation
+
+This document provides a comprehensive guide to the template files in the SingleCourseWebApp Django application, including their relationships with JavaScript and CSS files. The data passed into these template files come from views.py.
+
+## Template Structure Overview
+
+The templates in this application follow a hierarchical structure:
+
+```
+course/templates/course/
+├── adminpage/                # Admin interface templates
+├── editcourse/               # Course management templates
+├── homepage/                 # Home page templates
+├── learningpage/             # Learning interface templates
+│   └── lesson_types/         # Specific lesson type templates
+└── submissions/              # Submission management templates
+```
+
+### 3. Learning Interface
+
+#### 3.1 Learn Page
+
+**Template:** `course/templates/course/learningpage/learn.html`
+
+**Description:** Main learning interface for students.
+
+**JavaScript Dependencies:**
+- `course/static/course/js/learn.js`
+  - Handles navigation between lessons
+  - Tracks progress
+
+**CSS Dependencies:**
+- `course/static/course/css/learn.css`
+  - Styling for learning interface
+  - Styling for progress indicators
+
+**Data Context:**
+- `course`: Course object
+- `modules`: List of module objects
+- `current_module`: Currently selected module
+- `progress`: User's progress object
+
+#### 3.2 Lesson Base
+
+**Template:** `course/templates/course/learningpage/lesson_base.html`
+
+**Description:** Base template for all lesson types.
+
+**JavaScript Dependencies:**
+- `course/static/course/js/lesson_base.js`
+  - Handles lesson completion
+  - Manages navigation between lessons
+
+**CSS Dependencies:**
+- `course/static/course/css/lesson_base.css`
+  - Styling for lesson layout
+  - Styling for lesson navigation
+
+**Data Context:**
+- `lesson`: Current lesson object
+- `next_lesson`: Next lesson object (if any)
+- `prev_lesson`: Previous lesson object (if any)
+- `is_completed`: Boolean indicating if lesson is completed
+
+#### 3.3 Lesson Sidebar
+
+**Template:** `course/templates/course/learningpage/lesson_sidebar.html`
+
+**Description:** Sidebar navigation for lessons.
+
+**JavaScript Dependencies:**
+- `course/static/course/js/lesson_sidebar.js`
+  - Handles sidebar navigation
+  - Updates progress indicators
+
+**CSS Dependencies:**
+- `course/static/course/css/lesson_sidebar.css`
+  - Styling for sidebar layout
+  - Styling for lesson links
+  - Styling for progress indicators
+
+**Data Context:**
+- `modules`: List of module objects
+- `current_lesson`: Currently displayed lesson
+- `lesson_progress`: Dictionary of lesson completion status
+
+### 4. Lesson Type Templates
+
+#### 4.1 Video Lesson
+
+**Template:** `course/templates/course/learningpage/lesson_types/video.html`
+
+**Description:** Template for video lessons.
+
+**Data Context:**
+- `lesson`: Lesson object with video URL
+
+#### 4.2 Reading Lesson
+
+**Template:** `course/templates/course/learningpage/lesson_types/reading.html`
+
+**Description:** Template for reading lessons.
+
+**Data Context:**
+- `lesson`: Lesson object with reading content
+
+#### 4.3 Exercise Lesson
+
+**Template:** `course/templates/course/learningpage/lesson_types/exercise.html`
+
+**Description:** Template for interactive exercises.
+
+**JavaScript Dependencies:**
+- `course/static/course/js/exercise.js`
+  - Handles file uploads
+  - Manages exercise submissions
+- `course/static/course/js/file_upload.js`
+  - Provides file upload functionality
+
+**CSS Dependencies:**
+- `course/static/course/css/exercise.css`
+  - Styling for exercise interface
+  - Styling for file upload components
+
+**Data Context:**
+- `exercise`: Exercise object with details
+- `materials`: List of exercise materials
+- `previous_submissions`: List of user's previous submissions

@@ -1,0 +1,6 @@
+---
+description: rules for js fucntions
+globs: *.js,*html
+alwaysApply: false
+---
+While writing code to send request to the backend, you should check the SingleCourseWebApp/course/urls.py to make sure the endpoint is correct. You should also check SingleCourseWebApp/course/views.py, which defines what entpoints shall do, to make sure the data needed are correctly available and passed.

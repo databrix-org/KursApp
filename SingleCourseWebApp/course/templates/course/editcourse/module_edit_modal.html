@@ -2,7 +2,7 @@
 
 <div class="modal fade" id="editModuleModal" tabindex="-1" aria-labelledby="editModuleModalLabel" aria-hidden="true">
     {% csrf_token %}
-    <div class="modal-dialog modal-xl">
+    <div class="modal-dialog modal-fullscreen modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
                 <div class="module-title-container">
@@ -21,6 +21,16 @@
                                 <label for="editModuleDescription" class="form-label">Modulbeschreibung</label>
                                 <textarea class="form-control" id="editModuleDescription" rows="2" placeholder="Modulbeschreibung eingeben"></textarea>
                             </div>
+                            <div class="mb-2">
+                                <label for="editModuleDifficultyLevel" class="form-label">Schwierigkeitsgrad</label>
+                                <select class="form-select" id="editModuleDifficultyLevel">
+                                    <option value="1">Anfänger</option>
+                                    <option value="2">Fortgeschritten</option>
+                                    <option value="3">Experte</option>
+                                    <option value="4">Profi</option>
+                                    <option value="5">Demo</option>
+                                </select>
+                            </div>
                             <div class="d-flex gap-2">
                                 <button type="button" class="btn btn-sm btn-primary" onclick="saveModuleQuick()">Speichern</button>
                                 <button type="button" class="btn btn-sm btn-outline-secondary" onclick="cancelModuleQuickEdit()">Abbrechen</button>
@@ -33,14 +43,14 @@
             <div class="modal-body p-0">
                 <div class="split-view">
                     <div class="sidebar">
-                        <div class="lessons-section">
+                        <div class="lessons-section h-100">
                             <div class="lessons-header p-3 border-bottom d-flex justify-content-between align-items-center">
                                 <h6 class="mb-0">Lektionen</h6>
                                 <button type="button" class="btn btn-sm btn-outline-primary" id="addLessonBtn">
                                     <i class="bi bi-plus"></i> Lektion hinzufügen
                                 </button>
                             </div>
-                            <div class="lessons-list p-2" id="moduleLessonList" style="min-height: 200px; overflow-y: auto;">
+                            <div class="lessons-list p-2" id="moduleLessonList">
                                 <!-- Lessons will be added here dynamically -->
                             </div>
                         </div>
@@ -87,6 +97,19 @@
                                         <option value="traditional">Traditionelle Übung</option>
                                         <option value="jupyter">Jupyter Notebook Übung</option>
                                     </select>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="maximumPoints" class="form-label">Maximale Punkte</label>
+                                        <input type="number" class="form-control" id="maximumPoints" min="1" value="10">
+                                        <small class="text-muted">Höchstmögliche Punktzahl für diese Übung</small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="passPoints" class="form-label">Mindestpunktzahl</label>
+                                        <input type="number" class="form-control" id="passPoints" min="1" value="5">
+                                        <small class="text-muted">Punktzahl zum Bestehen der Übung</small>
+                                    </div>
                                 </div>
 
                                 <div id="traditionalExercise" class="exercise-type-content d-none">

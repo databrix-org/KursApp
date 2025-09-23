@@ -1,0 +1,35 @@
+---
+description: Rules for models.py
+globs: models.py
+alwaysApply: false
+---
+## Models (Data Structure)
+
+The application uses the following key models:
+
+1. **CustomUserModel**: Extended user model with instructor/student roles
+   - Fields: email, first_name, last_name, username, is_active, is_staff, is_instructor, is_student
+
+2. **Course**: Represents a course
+   - Fields: title, description, instructor, created_at, updated_at, end_date, difficulty_level, max_members, is_published, domain_name
+
+3. **Enrollment**: Tracks student enrollment in courses
+   - Fields: student, course, enrolled_at, progress
+
+4. **Module**: Represents a section within a course
+   - Contains lessons
+
+5. **Lesson**: Represents a single learning unit
+   - Types: video, reading, exercise
+   - Tracks progress
+
+6. **Exercise**: Represents an interactive assignment
+   - Supports file uploads and submissions
+
+7. **Group**: Represents student groups for collaborative work
+   - Fields: name, course, members
+
+8. **Submission**: Represents student submissions for exercises
+   - Includes grading functionality
+
+9. **Ticket**: Support ticket system for students

@@ -181,3 +181,125 @@
     box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
 }
 
+/* Submission Confirmation Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.show {
+    opacity: 1;
+}
+
+.modal-content {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    width: 90%;
+    max-width: 500px;
+    transform: translateY(-20px);
+    transition: transform 0.3s ease;
+    overflow: hidden;
+}
+
+.modal-content.show {
+    transform: translateY(0);
+}
+
+.submission-confirm-modal .modal-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.submission-confirm-modal .modal-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #212529;
+}
+
+.submission-confirm-modal .close-modal {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.submission-confirm-modal .modal-body {
+    padding: 1.5rem;
+}
+
+.submission-confirm-modal .modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.submission-confirm-modal .alert {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.submission-confirm-modal .alert-warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffecb5;
+    color: #856404;
+}
+
+.submission-confirm-modal .alert i {
+    font-size: 1.25rem;
+}
+
+.submission-confirm-modal .btn {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.submission-confirm-modal .btn-secondary {
+    background-color: #6c757d;
+    border: 1px solid #6c757d;
+    color: #fff;
+}
+
+.submission-confirm-modal .btn-secondary:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+}
+
+.submission-confirm-modal .btn-primary {
+    background-color: #4e73df;
+    border: 1px solid #4e73df;
+    color: #fff;
+}
+
+.submission-confirm-modal .btn-primary:hover {
+    background-color: #2e59d9;
+    border-color: #2653d4;
+}
+

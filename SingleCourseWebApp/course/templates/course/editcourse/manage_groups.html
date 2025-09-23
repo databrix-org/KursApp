@@ -10,10 +10,22 @@
 <div class="row">
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="mb-0">Gruppenverwaltung</h2>
-            <button class="btn btn-primary create-group-btn action-button" id="createGroupBtn">
-                <i class="fas fa-plus me-2"></i>Neue Gruppe erstellen
-            </button>
+            <h2 class="mb-0">Teamverwaltung</h2>
+            {% if course.is_published %}
+                <div class="d-flex align-items-center">
+                    <span class="text-muted me-3">
+                        <i class="fas fa-lock me-1"></i>
+                        Teams können nach der Kursveröffentlichung nicht mehr erstellt werden
+                    </span>
+                    <button class="btn btn-secondary create-group-btn action-button" disabled>
+                        <i class="fas fa-plus me-2"></i>Neues Team erstellen
+                    </button>
+                </div>
+            {% else %}
+                <button class="btn btn-primary create-group-btn action-button" id="createGroupBtn">
+                    <i class="fas fa-plus me-2"></i>Neues Team erstellen
+                </button>
+            {% endif %}
         </div>
 
         <div class="card management-card">
@@ -27,7 +39,7 @@
                     <table class="table table-hover" id="groupsTable">
                         <thead>
                             <tr>
-                                <th>Gruppen-ID</th>
+                                <th>Team-Nr.</th>
                                 <th>Mitglieder</th>
                                 <th>Erstellt am</th>
                                 <th>Aktionen</th>
@@ -58,16 +70,23 @@
                                                 data-exercise-name="{{ course.slug|slugify }}">
                                             <i class="fas fa-external-link-alt me-1"></i>Arbeitsbereich öffnen
                                         </button>
-                                        <button class="btn btn-sm btn-danger delete-group-btn" 
-                                                data-group-id="{{ group.id }}">
-                                            <i class="fas fa-trash-alt me-1"></i>Löschen
-                                        </button>
+                                        {% if course.is_published %}
+                                            <button class="btn btn-sm btn-secondary" disabled
+                                                    title="Teams können nach der Kursveröffentlichung nicht mehr gelöscht werden">
+                                                <i class="fas fa-lock me-1"></i>Löschen
+                                            </button>
+                                        {% else %}
+                                            <button class="btn btn-sm btn-danger delete-group-btn" 
+                                                    data-group-id="{{ group.id }}">
+                                                <i class="fas fa-trash-alt me-1"></i>Löschen
+                                            </button>
+                                        {% endif %}
                                     </div>
                                 </td>
                                 <td>
                                     <button class="btn btn-sm btn-outline-secondary email-group-btn"
                                             data-group-id="{{ group.id }}">
-                                        <i class="fas fa-envelope me-1"></i>Gruppe E-Mail
+                                        <i class="fas fa-envelope me-1"></i>E-Mail Senden
                                     </button>
                                 </td>
                             </tr>
@@ -87,7 +106,7 @@
             <div class="modal-header">
                 <h5 class="modal-title">
                     <i class="fas fa-users"></i>
-                    Gruppenmitglieder
+                    Teammitglieder
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
@@ -121,7 +140,7 @@
                     </div>
                     <div class="member-limit-info">
                         <i class="fas fa-info-circle"></i>
-                        <span>Maximale Anzahl Mitglieder: {{ max_members }}</span>
+                        <span>Maximale Anzahl Teammitglieder: {{ max_members }}</span>
                     </div>
                 </div>
             </div>
@@ -149,294 +168,9 @@
 {% block extra_js %}
 {{ block.super }}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const courseId = {{ course.id }};
-    const createGroupBtn = document.getElementById('createGroupBtn');
-    const groupsTable = document.getElementById('groupsTable');
-    const membersModal = document.getElementById('membersModal');
-    const studentSelect = document.getElementById('studentSelect');
-    const addStudentBtn = document.getElementById('addStudentBtn');
-    const loadingSpinner = document.getElementById('loadingSpinner');
-    const membersLoadingSpinner = document.getElementById('membersLoadingSpinner');
-    const toast = new bootstrap.Toast(document.getElementById('toastNotification'));
-    let currentGroupId = null;
-
-    // Show notification
-    function showNotification(title, message, isError = false) {
-        const toastEl = document.getElementById('toastNotification');
-        const titleEl = document.getElementById('toastTitle');
-        const messageEl = document.getElementById('toastMessage');
-        
-        toastEl.classList.remove('bg-danger', 'text-white');
-        if (isError) {
-            toastEl.classList.add('bg-danger', 'text-white');
-        }
-        
-        titleEl.textContent = title;
-        messageEl.textContent = message;
-        toast.show();
-    }
-
-    // Toggle loading spinner
-    function toggleLoading(show, spinnerEl = loadingSpinner) {
-        spinnerEl.classList.toggle('d-none', !show);
-    }
-
-    createGroupBtn.addEventListener('click', async () => {
-        try {
-            toggleLoading(true);
-            const response = await fetch(`/course/manage/${courseId}/groups/create/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
-                },
-            });
-            const data = await response.json();
-            if (response.ok) {
-                showNotification('Success', 'New group created successfully');
-                location.reload();
-            } else {
-                throw new Error(data.error || 'Failed to create group');
-            }
-        } catch (error) {
-            console.error('Error creating group:', error);
-            showNotification('Error', error.message || 'Failed to create group', true);
-        } finally {
-            toggleLoading(false);
-        }
-    });
-
-    groupsTable.addEventListener('click', async (e) => {
-        if (e.target.closest('.delete-group-btn')) {
-            const btn = e.target.closest('.delete-group-btn');
-            const groupId = btn.dataset.groupId;
-            if (confirm('Sind Sie sicher, dass Sie diese Gruppe löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.')) {
-                try {
-                    toggleLoading(true);
-
-                    const response = await fetch(`{% url 'course:delete_group' course.id '0' %}`.replace('0', groupId), {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRFToken': getCookie('csrftoken'),
-                        },
-                    });
-                    if (response.ok) {
-                        btn.closest('tr').remove();
-                        showNotification('Success', 'Group deleted successfully');
-                    } else {
-                        throw new Error('Failed to delete group');
-                    }
-                } catch (error) {
-                    console.error('Error deleting group:', error);
-                    showNotification('Error', error.message || 'Failed to delete group', true);
-                } finally {
-                    toggleLoading(false);
-                }
-            }
-        }
-    });
-
-    membersModal.addEventListener('show.bs.modal', async (e) => {
-        const button = e.relatedTarget; // This is the element that triggered the modal
-        if (!button) return;
-        
-        currentGroupId = button.dataset.groupId;
-        console.log('Modal opened for group:', currentGroupId); // Debug log
-        
-        studentSelect.value = '';
-        addStudentBtn.disabled = true;
-        await loadGroupMembers(currentGroupId);
-    });
-
-    studentSelect.addEventListener('change', (e) => {
-        addStudentBtn.disabled = !e.target.value;
-    });
-
-    addStudentBtn.addEventListener('click', async () => {
-        const studentId = studentSelect.value;
-        console.log('Adding student:', studentId, 'to group:', currentGroupId); // Debug log
-        
-        if (!studentId || !currentGroupId) {
-            console.log('Missing studentId or currentGroupId:', { studentId, currentGroupId }); // Debug log
-            return;
-        }
-
-        try {
-            toggleLoading(true, membersLoadingSpinner);
-            const formData = new FormData();
-            formData.append('student_id', studentId);
-            
-            const response = await fetch(`{% url 'course:add_group_member' course.id '0' %}`.replace('0', currentGroupId), {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
-                },
-                body: formData
-            });
-            
-            const data = await response.json();
-            if (response.ok) {
-                await loadGroupMembers(currentGroupId);
-                updateMemberCount(currentGroupId, data.member_count);
-                studentSelect.value = '';
-                addStudentBtn.disabled = true;
-                showNotification('Success', 'Member added successfully');
-            } else {
-                throw new Error(data.error || 'Failed to add member');
-            }
-        } catch (error) {
-            console.error('Error adding member:', error);
-            showNotification('Error', error.message || 'Failed to add member', true);
-        } finally {
-            toggleLoading(false, membersLoadingSpinner);
-        }
-    });
-
-    async function loadGroupMembers(groupId) {
-        try {
-            toggleLoading(true, membersLoadingSpinner);
-            const response = await fetch(`{% url 'course:get_group_members' '0' %}`.replace('0', groupId));
-            const members = await response.json();
-            const membersList = document.getElementById('membersList');
-            
-            if (!response.ok) {
-                throw new Error('Failed to load members');
-            }
-
-            membersList.innerHTML = members.map(member => `
-                <div class="list-group-item d-flex justify-content-between align-items-start">
-                    <div class="member-info">
-                        <div class="member-name">
-                            <i class="fas fa-user me-2"></i>${member.full_name}
-                        </div>
-                        <div class="member-detail">
-                            <i class="fas fa-envelope"></i>
-                            <span>${member.email}</span>
-                        </div>
-                        <div class="member-detail">
-                            <i class="fas fa-clock"></i>
-                            <span>Zuletzt aktiv: ${member.last_active}</span>
-                        </div>
-                    </div>
-                    <button class="btn btn-sm btn-outline-danger remove-member-btn" 
-                            data-student-id="${member.id}">
-                        <i class="fas fa-user-minus me-1"></i>Entfernen
-                    </button>
-                </div>
-            `).join('');
-
-            // Add event listeners for remove buttons
-            membersList.querySelectorAll('.remove-member-btn').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    const studentId = e.target.dataset.studentId;
-                    if (confirm('Are you sure you want to remove this member?')) {
-                        try {
-                            toggleLoading(true, membersLoadingSpinner);
-                            const formData = new FormData();
-                            formData.append('student_id', studentId);
-
-                            const response = await fetch(`{% url 'course:remove_group_member' course.id '0' %}`.replace('0', currentGroupId), {
-                                method: 'POST',
-                                headers: {
-                                    'X-CSRFToken': getCookie('csrftoken'),
-                                },
-                                body: formData
-                            });
-                            const data = await response.json();
-                            if (response.ok) {
-                                e.target.closest('.list-group-item').remove();
-                                updateMemberCount(currentGroupId, data.member_count);
-                                showNotification('Success', 'Member removed successfully');
-                            } else {
-                                throw new Error(data.error || 'Failed to remove member');
-                            }
-                        } catch (error) {
-                            console.error('Error removing member:', error);
-                            showNotification('Error', error.message || 'Failed to remove member', true);
-                        } finally {
-                            toggleLoading(false, membersLoadingSpinner);
-                        }
-                    }
-                });
-            });
-        } catch (error) {
-            console.error('Error loading members:', error);
-            showNotification('Error', 'Failed to load members', true);
-        } finally {
-            toggleLoading(false, membersLoadingSpinner);
-        }
-    }
-
-    function updateMemberCount(groupId, count) {
-        const row = document.querySelector(`tr[data-group-id="${groupId}"]`);
-        if (row) {
-            row.querySelector('.member-count').textContent = count;
-        }
-    }
-
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-
-    // Handle workspace viewing
-    document.querySelectorAll('.view-workspace-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const domain = this.dataset.domain;
-            const group = this.dataset.group;
-            const exerciseName = this.dataset.exerciseName;
-
-            if (!domain) {
-                showNotification('Error', 'JupyterHub domain not configured', true);
-                return;
-            }
-
-            if (!group) {
-                showNotification('Error', 'Group information missing', true);
-                return;
-            }
-
-            const jupyterHubUrl = `https://${domain}/jupyterhub/hub/user/${group}/lab`;
-            window.open(jupyterHubUrl, '_blank');
-        });
-    });
-
-    // Direct email functionality with automatic recipient population
-    document.querySelectorAll('.email-group-btn').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            const groupId = e.target.closest('.email-group-btn').dataset.groupId;
-            try {
-                toggleLoading(true);
-                const response = await fetch(`{% url 'course:get_group_members' '0' %}`.replace('0', groupId));
-                if (!response.ok) {
-                    throw new Error('Failed to load member emails');
-                }
-                const members = await response.json();
-                
-                // Extract email addresses from the members data
-                const emailAddresses = members.map(member => member.email).join(',');
-                
-                // Create and open mailto link
-                const mailtoLink = `mailto:${emailAddresses}?subject=Course: ${encodeURIComponent('{{ course.title }}')}`;
-                window.location.href = mailtoLink;
-            } catch (error) {
-                console.error('Error loading member emails:', error);
-                showNotification('Error', error.message || 'Failed to load member emails', true);
-            } finally {
-                toggleLoading(false);
-            }
-        });
-    });
-});
+// Set data attributes for JavaScript to access
+document.body.dataset.courseId = '{{ course.id }}';
+document.body.dataset.courseTitle = '{{ course.title|escapejs }}';
 </script>
+<script src="{% static 'course/js/manage-groups.js' %}"></script>
 {% endblock %} 

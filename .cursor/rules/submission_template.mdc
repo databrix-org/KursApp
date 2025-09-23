@@ -1,0 +1,66 @@
+---
+description: Rules for submission template
+globs: dashboard.html,submissions.css,exercise_submissions.html,exercise-submissions.js,grade_submission.html,grade-submission.js,statistics.html
+alwaysApply: false
+---
+
+### 5. Submission Management
+
+#### 5.1 Submissions Dashboard
+
+**Template:** `course/templates/course/submissions/dashboard.html`
+
+**Description:** Dashboard for managing exercise submissions.
+
+**CSS Dependencies:**
+- `course/static/course/css/submissions.css`
+  - Styling for submission lists
+  - Styling for submission statistics
+
+**Data Context:**
+- `exercises`: List of exercise objects
+- `submission_counts`: Dictionary of submission counts per exercise
+
+#### 5.2 Exercise Submissions
+
+**Template:** `course/templates/course/submissions/exercise_submissions.html`
+
+**Description:** List of submissions for a specific exercise.
+
+**JavaScript Dependencies:**
+- `course/static/course/js/exercise-submissions.js`
+  - Handles filtering and sorting submissions
+  - Manages bulk actions
+
+**Data Context:**
+- `exercise`: Exercise object
+- `submissions`: List of submission objects
+- `groups`: List of group objects
+
+#### 5.3 Grade Submission
+
+**Template:** `course/templates/course/submissions/grade_submission.html`
+
+**Description:** Interface for grading a submission.
+
+**JavaScript Dependencies:**
+- `course/static/course/js/grade-submission.js`
+  - Handles grading interface
+  - Manages feedback submission
+
+**Data Context:**
+- `submission`: Submission object
+- `files`: List of submitted files
+- `exercise`: Exercise object
+- `student`: Student user object
+
+#### 5.4 Statistics
+
+**Template:** `course/templates/course/submissions/statistics.html`
+
+**Description:** Statistical overview of submissions.
+
+**Data Context:**
+- `exercises`: List of exercise objects
+- `submission_stats`: Dictionary of submission statistics
+- `completion_rates`: Dictionary of completion rates

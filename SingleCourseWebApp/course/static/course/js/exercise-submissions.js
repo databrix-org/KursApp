@@ -6,6 +6,9 @@ function initSubmissionsTable() {
         return;
     }
 
+    // Store exercise max points globally for use in column rendering
+    let exerciseMaxPoints = null;
+
     // Initialize DataTable
     table.DataTable({
         order: [[2, 'desc']],
@@ -34,6 +37,8 @@ function initSubmissionsTable() {
                     }
                     return [];
                 }
+                // Store the exercise max points for use in column rendering
+                exerciseMaxPoints = json.exercise_max_points;
                 return json.submissions || [];
             },
             error: function(xhr, error, thrown) {
@@ -60,21 +65,28 @@ function initSubmissionsTable() {
             },
             {
                 data: 'score',
-                title: 'Bewertung',
+                title: 'Punkte',
                 render: function(data, type, row) {
-                    return data !== null ? data : 'Ausstehend';
+                    if (data !== null && exerciseMaxPoints !== null) {
+                        return `${data}/${exerciseMaxPoints}`;
+                    } else if (data !== null) {
+                        return data;
+                    } else {
+                        return 'Ausstehend';
+                    }
                 }
             },
-            /*
             {
                 data: 'passed',
                 title: 'Status',
                 render: function(data, type, row) {
-                    if (row.score === null) return 'Pending';
-                    return data ? 'Passed' : 'Failed';
+                    if (row.score === null) {
+                        return '<span class="badge bg-warning">Nicht bewertet</span>';
+                    } else {
+                        return '<span class="badge bg-success">Bewertet</span>';
+                    }
                 }
             },
-            */
             {
                 data: 'files',
                 title: 'Dateien',
@@ -101,11 +113,19 @@ function initSubmissionsTable() {
     // Handle submission filtering
     document.getElementById('submissionFilter')?.addEventListener('change', function() {
         const filterValue = this.value;
-        table.DataTable().column(2).search( // Score column index
-            filterValue === 'pending' ? '^Pending$' :
-            filterValue === 'graded' ? '^[0-9]' : '',
+        let searchValue = '';
+        let searchColumn = 3; // Status column index
+        
+        if (filterValue === 'graded') {
+            searchValue = 'Bewertet';
+        } else if (filterValue === 'not_graded') {
+            searchValue = 'Nicht bewertet';
+        }
+        
+        table.DataTable().column(searchColumn).search(
+            searchValue,
             true, // Use regex
-            false // Exact match for 'Pending'
+            false // Exact match
         ).draw();
     });
 }

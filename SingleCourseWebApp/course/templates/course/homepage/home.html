@@ -1,219 +1,336 @@
 {% load static %}
 
-{# Add this near the top of your template #}
-<meta name="csrf-token" content="{{ csrf_token }}">
-
-{# CSS Stylesheets #}
-<link rel="stylesheet" href="{% static 'course/css/home.css' %}">
-
-{# Main Course Details Container #}
-<div class="course-details-container" data-course-id="{{ course.id }}">
-    {# Course Header Section #}
-    <div class="course-header">
-        <div class="header-content">
-            <h1>{{ course.title }}</h1>
-            
-            {# Updated Course Action Buttons #}
-            <div class="course-actions">
-                {% if is_enrolled %}
-                    {% if course.max_members == 1 %}
-                        <a href="{% url 'course:course_overview' course.id %}" class="action-btn primary">
-                            <span class="btn-icon">🚀</span>
-                            Kurs starten
-                        </a>
-                    {% else %}
-                        {% if user_group %}
-                            <a href="{% url 'course:course_overview' course.id %}" class="action-btn primary">
-                                <span class="btn-icon">🚀</span>
-                                Kurs starten
-                            </a>
-                        {% else %}
-                            <button class="action-btn secondary" onclick="openGroupPopup()">
-                                <span class="btn-icon">➕</span>
-                                Gruppe beitreten
-                            </button>
-                        {% endif %}
-                    {% endif %}
-                {% else %}
-                    <form action="{% url 'course:course_enroll' course.id %}" method="post">
-                        {% csrf_token %}
-                        <button type="submit" class="action-btn enroll">
-                            <span class="btn-icon">📝</span>
-                            Jetzt einschreiben
-                        </button>
-                    </form>
-                {% endif %}
-                
-                {% if is_instructor %}
-                    <a href="{% url 'course:manage_course' course.id %}" class="action-btn instructor">
-                        <span class="btn-icon">⚙️</span>
-                        Kursverwaltung
-                    </a>
-                    <a href="{% url 'course:submissions_dashboard' %}" class="action-btn instructor">
-                        <span class="btn-icon">📊</span>
-                        Abgaben
-                    </a>
-                {% endif %}
-                
-                {% if request.user.is_superuser %}
-                    <a href="{% url 'course:admin_dashboard' %}" class="action-btn admin">
-                        <span class="btn-icon">👑</span>
-                        Admin-Bereich
-                    </a>
-                {% endif %}
-                
-                <a href="{% url 'shibboleth:logout' %}" class="action-btn logout">
-                    <span class="btn-icon">🔒</span>
-                    Abmelden
-                </a>
-            </div>
-        </div>
-    </div>
-
-    {# Course Navigation Tabs #}
-    <div class="course-tabs">
-        <button class="tab-button active" data-tab="info">Kursübersicht</button>
-        <button class="tab-button" data-tab="modules">Kursmodule</button>
-        <button class="tab-button" data-tab="group">Gruppeninfo</button>
-        <button class="tab-button" data-tab="details">Projektdetails</button>
-
-    </div>
-
-    {# Tab Content Sections #}
-    {# Info Tab Content #}
-    <div class="tab-content active" id="info">
-        <div class="content-card description-card fade-in">
-            <div class="description-header">
-                <h3 class="content-title">Kursübersicht</h3>
-            </div>
-            <div class="prose-content">
-                {{ course.description|linebreaks }}
-            </div>
-        </div>
-    </div>
-
-    {# Modules Tab Content #}
-    <div class="tab-content" id="modules">
-        {% if course.modules.all %}
-            <div class="content-card fade-in">
-                <h3 class="content-title">Kursmodule</h3>
-                <div class="styled-list">
-                    {% for module in course.modules.all %}
-                        <div class="list-item">
-                            <span class="module-number">Modul {{ forloop.counter }}</span>
-                            <h4 class="module-title">{{ module.title }}</h4>
-                        </div>
-                    {% endfor %}
-
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    
+    {# CSS Stylesheets #}
+    <link rel="stylesheet" href="{% static 'course/css/home.css' %}">
+    <link rel="stylesheet" href="{% static 'course/css/footer.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="course-details-container" data-course-id="{{ course.id }}">
+        {# Enhanced Hero Section with Dynamic Elements #}
+        <div class="hero-section">
+            <div class="hero-background">
+                <div class="tech-pattern"></div>
+                <div class="gradient-overlay"></div>
+                <div class="animated-shapes">
+                    <div class="shape shape-1"></div>
+                    <div class="shape shape-2"></div>
+                    <div class="shape shape-3"></div>
                 </div>
             </div>
-        {% else %}
-            <div class="empty-state">
-                <i class="icon-notebook"></i>
-                <p>Noch keine Module verfügbar</p>
-            </div>
-        {% endif %}
-    </div>
-
-    {# Group Info Tab Content #}
-    <div class="tab-content" id="group">
-        <div class="content-card fade-in">
-            {% if user_group %}
-                <h3 class="content-title">Ihre Gruppe</h3>
-                <div class="group-detail-box">
-                    <div class="detail-item">
-                        <span class="detail-label">Gruppen-ID:</span>
-                        <span class="detail-value badge">{{ user_group.id }}</span>
+            
+            <div class="hero-content">
+                <div class="course-header">
+                    <div class="course-category">
+                        <i class="fas fa-brain"></i>
+                        <span>Data Science & KI</span>
                     </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Mitglieder:</span>
-                        <div class="member-grid">
+                    
+                    <h1>{{ course.title }}</h1>
+                    <p class="course-tagline">Entdecken Sie die Welt der Data Science und KI</p>
+                    
+ 
+
+                    <div class="course-features">
+                        <div class="feature-tag">
+                            <i class="fas fa-laptop-code"></i>
+                            Praktische Projekte
+                        </div>
+                        <div class="feature-tag">
+                            <i class="fas fa-comments"></i>
+                            Experten-Support
+                        </div>
+                        <div class="feature-tag">
+                            <i class="fas fa-medal"></i>
+                            Zertifizierung
+                        </div>
+                    </div>
+                    
+                    <div class="course-actions">
+                        {% if is_enrolled %}
+                            {% if course.max_members == 1 %}
+                                <a href="{% url 'course:course_overview' course.id %}" class="action-btn primary">
+                                    <i class="fas fa-rocket"></i>
+                                    <span>Kurs starten</span>
+                                    <i class="fas fa-arrow-right"></i>
+                                </a>
+                            {% else %}
+                                {% if user_group %}
+                                    <a href="{% url 'course:course_overview' course.id %}" class="action-btn primary">
+                                        <i class="fas fa-rocket"></i>
+                                        <span>Kurs starten</span>
+                                        <i class="fas fa-arrow-right"></i>
+                                    </a>
+                                {% else %}
+                                    <button class="action-btn secondary" onclick="openGroupPopup()">
+                                        <i class="fas fa-users"></i>
+                                        <span>Gruppe beitreten</span>
+                                    </button>
+                                {% endif %}
+                            {% endif %}
+                        {% else %}
+                            <button class="action-btn enroll" onclick="openEnrollmentModal()">
+                                <i class="fas fa-sign-in-alt"></i>
+                                <span>Jetzt einschreiben</span>
+                            </button>
+                        {% endif %}
+                        
+                        {% if is_instructor %}
+                            <a href="{% url 'course:manage_course' course.id %}" class="action-btn instructor">
+                                <i class="fas fa-cog"></i>
+                                <span>Kursverwaltung</span>
+                            </a>
+                            <a href="{% url 'course:submissions_dashboard' %}" class="action-btn instructor">
+                                <i class="fas fa-chart-bar"></i>
+                                <span>Abgaben</span>
+                            </a>
+                        {% endif %}
+                        
+                        {% if request.user.is_superuser %}
+                            <a href="{% url 'course:admin_dashboard' %}" class="action-btn admin">
+                                <i class="fas fa-crown"></i>
+                                <span>Admin-Bereich</span>
+                            </a>
+                        {% endif %}
+                        <a href="{% url 'shibboleth:logout' %}" class="action-btn logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Abmelden</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Modern Tab Navigation #}
+        <nav class="course-tabs">
+            <button class="tab-button active" data-tab="info">
+                <i class="fas fa-info-circle"></i>
+                Modulübersicht
+            </button>
+            <button class="tab-button" data-tab="group">
+                <i class="fas fa-users"></i>
+                Teaminfo
+            </button>
+            <button class="tab-button" data-tab="details">
+                <i class="fas fa-clipboard-list"></i>
+                Moduldetails
+            </button>
+        </nav>
+
+        {# Tab Content Sections #}
+        <div class="tab-content active" id="info">
+            <div class="content-card description-card">
+                <div class="card-header">
+                    <h2>Über dieses Modul</h2>
+                    <div class="tech-badge">Data Science & KI</div>
+                </div>
+                <div class="prose-content">
+                    {{ course.description|linebreaks }}
+                </div>
+                <div class="course-highlights">
+                    <div class="highlight-item">
+                        <i class="fas fa-clock"></i>
+                        <span>Flexibles Lernen</span>
+                    </div>
+                    <div class="highlight-item">
+                        <i class="fas fa-laptop-code"></i>
+                        <span>Praktische Übungen</span>
+                    </div>
+                    <div class="highlight-item">
+                        <i class="fas fa-certificate"></i>
+                        <span>Zertifizierung</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="group">
+            <div class="content-card">
+                {% if user_group %}
+                    <div class="group-dashboard">
+                        <div class="group-header">
+                            <h2>Ihr Team</h2>
+                            <span class="group-badge">Team {{ user_group.id }}</span>
+                            <button class="action-btn secondary email-all" onclick="emailAllMembers()">
+                                <i class="fas fa-envelope"></i>
+                                Team-Email
+                            </button>
+                        </div>
+                        <div class="members-grid">
                             {% for member in user_group.members.all %}
-                                <div class="member-badge">
-                                    <span class="member-icon">👤{{ member.first_name }} {{ member.last_name }}</span>
+                                <div class="member-card">
+                                    <div class="member-avatar">
+                                        <i class="fas fa-user"></i>
+                                    </div>
                                     <div class="member-info">
-                                        <a href="mailto:{{ member.email }}" class="member-email" title="Email {{ member.first_name }}">
-                                            {{ member.email }}
-                                        </a>
+                                        <h4>{{ member.first_name }} {{ member.last_name }}</h4>
+                                        <div class="member-contact">
+                                            <a href="mailto:{{ member.email }}" class="member-email">
+                                                <i class="fas fa-envelope"></i>
+                                                {{ member.email }}
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             {% endfor %}
                         </div>
-
-
                     </div>
-                </div>
-            {% else %}
-                <div class="empty-state">
-                    <i class="icon-group"></i>
-                    <p>Sie sind noch kein Mitglied einer Gruppe</p>
-                </div>
-            {% endif %}
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-users"></i>
+                        <p>Sie sind noch kein Mitglied eines Teams</p>
+                    </div>
+                {% endif %}
+            </div>
         </div>
-    </div>
 
-    {# Project Details Tab Content #}
-    <div class="tab-content" id="details">
-        <div class="content-card fade-in">
-            <h3 class="content-title">Projektdetails</h3>
-            <div class="detail-grid">
-                <div class="detail-item">
-                    <i class="icon-users"></i>
-                    <div>
-                        <span class="detail-label">Max Group Size</span>
-                        <span class="detail-value">{{ course.max_members }}</span>
+        <div class="tab-content" id="details">
+            <div class="content-card">
+                <div class="details-grid">
+                    <div class="detail-card">
+                        <i class="fas fa-users"></i>
+                        <div class="detail-info">
+                            <h4>Maximale Gruppengröße</h4>
+                            <span class="detail-value">{{ course.max_members }}</span>
+                        </div>
+                    </div>
+                    <div class="detail-card">
+                        <i class="fas fa-calendar-alt"></i>
+                        <div class="detail-info">
+                            <h4>Startdatum</h4>
+                            <span class="detail-value">{{ course.start_date|date:"d.m.Y" }}</span>
+                        </div>
+                    </div>
+                    <div class="detail-card">
+                        <i class="fas fa-flag-checkered"></i>
+                        <div class="detail-info">
+                            <h4>Enddatum</h4>
+                            <span class="detail-value">{{ course.end_date|date:"d.m.Y" }}</span>
+                        </div>
                     </div>
                 </div>
-                <div class="detail-item">
-                    <i class="icon-calendar"></i>
-                    <div>
-                        <span class="detail-label">Start Date</span>
-                        <span class="detail-value">{{ course.start_date|date:"M d, Y" }}</span>
+            </div>
+        </div>
+
+        {# Group Join Modal #}
+        <div id="groupPopup" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Team beitreten</h3>
+                    <button class="close-btn" onclick="closeGroupPopup()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="search-group">
+                        <div class="search-input-wrapper">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="groupSearchInput" placeholder="Team suchen...">
+                        </div>
+                    </div>
+                    <div id="searchResults" class="search-results">
+                        <!-- Teams will be loaded here -->
                     </div>
                 </div>
-                <div class="detail-item">
-                    <i class="icon-deadline"></i>
-                    <div>
-                        <span class="detail-label">End Date</span>
-                        <span class="detail-value">{{ course.end_date|date:"M d, Y" }}</span>
+            </div>
+        </div>
+
+        {# Enrollment Modal #}
+        <div id="enrollmentModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Kurseinschreibung</h3>
+                    <button class="close-btn" onclick="closeEnrollmentModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="enrollmentKeyForm" class="enrollment-form">
+                        <p>Bitte geben Sie erst den gültigen Einschreibeschlüssel ein. Dieser ist identisch zum Einschreibeschlüssel des zugeordneten Moodle-Kurses!</p>
+                        <div class="form-group">
+                            <label for="enrollmentKey">Einschreibeschlüssel</label>
+                            <input type="text" id="enrollmentKey" name="enrollment_key" required>
+                        </div>
+                        <div id="enrollmentError" class="error-message" style="display: none;"></div>
+                        <div class="form-actions">
+                            <button type="button" class="action-btn primary" onclick="submitEnrollment()">
+                                <i class="fas fa-check"></i>
+                                Einschreiben
+                            </button>
+                        </div>
                     </div>
+                    <div id="groupSelectionForm" style="display: none;">
+                        <p>Bitte wählen Sie ein Team aus, bevor Sie den Kurs starten können.</p>
+                        <div id="availableGroups" class="groups-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Contact Section #}
+        <div class="contact-section">
+            <div class="content-card">
+                <div class="contact-content">
+                    <h3>Hilfe benötigt?</h3>
+                    <p>Bei Fragen oder wenn Sie Unterstützung benötigen, kontaktieren Sie bitte den Infopunkt.</p>
+                    <button class="action-btn contact" onclick="openTicketModal()">
+                        <i class="fas fa-envelope"></i>
+                        Support Anfrage
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {# Ticket Form Modal #}
+        <div id="ticketModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Neue Anfrage erstellen</h3>
+                    <button class="close-btn" onclick="closeTicketModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="ticketForm" class="ticket-form">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="ticketSubject">Betreff</label>
+                            <input type="text" id="ticketSubject" name="subject" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="ticketDescription">Beschreibung</label>
+                            <textarea id="ticketDescription" name="description" rows="5" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="ticketImage">Bild hinzufügen (optional)</label>
+                            <div class="file-upload-wrapper">
+                                <input type="file" id="ticketImage" name="image" accept="image/*">
+                                <div class="file-preview"></div>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="action-btn primary">
+                                <i class="fas fa-paper-plane"></i>
+                                Absenden
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 
-    {# Group Join Popup Modal #}
-    <div id="groupPopup" class="group-popup-overlay">
-        <div class="popup-content">
-            <div class="popup-header">
-                <h3>Gruppe beitreten</h3>
-                <button class="close-btn" onclick="closeGroupPopup()">×</button>
-            </div>
-            
-            <div class="popup-body">
-                <div class="search-group">
-                </div>
-                <div id="searchResults" class="search-results">
-                    <!-- Groups will be loaded here -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {# Contact Admin Section #}
-    <div class="contact-admin-section">
-        <div class="content-card fade-in">
-            <h3 class="content-title">Hilfe benötigt?</h3>
-            <p class="contact-description">Bei Fragen oder wenn Sie Unterstützung benötigen, kontaktieren Sie bitte die Kursadministratoren.</p>
-            <div class="contact-actions">
-                <a href="mailto:{{ course.admin_email|default:'admin@databrix.com' }}" class="action-btn contact">
-                    <span class="btn-icon">✉️</span>
-                    Admin kontaktieren
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
-{# JavaScript Section #}
-<script src="{% static 'course/js/home.js' %}"></script>
+    {# JavaScript #}
+    <script src="{% static 'course/js/home.js' %}"></script>
+    
+    {% include 'course/footer.html' %}
+</body>
+</html>

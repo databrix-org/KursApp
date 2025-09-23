@@ -22,7 +22,7 @@ from django.contrib.auth import login, authenticate
 from django.conf import settings
 from .models import (
     Course, Enrollment, LessonProgress, Lesson, Exercise, Group, Module,
-    ExerciseMaterial, JupyterLabImage, CustomUserModel, Submission, SubmissionFile
+    ExerciseMaterial, JupyterLabImage, CustomUserModel, Submission, SubmissionFile, Ticket
 )
 import json
 from django.core.serializers.json import DjangoJSONEncoder
@@ -44,6 +44,11 @@ import os
 import logging
 import re
 import uuid
+from django.core.mail import send_mail, EmailMessage
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.db import transaction
+from .utils.files import start_group_copies
 
 logger = logging.getLogger(__name__)
 
@@ -260,8 +265,8 @@ def home(request):
         # Get available groups (not full and user not already in them)
         if is_enrolled and not user_group:
             available_groups = Group.objects.filter(course=course)\
-                .annotate(member_count=models.Count('members'))\
-                .filter(member_count__lt=course.max_members)\
+                .annotate(members_count=models.Count('members'))\
+                .filter(members_count__lt=course.max_members)\
                 .exclude(members=request.user)
     
     context = {
@@ -282,15 +287,92 @@ def course_enroll(request, course_id):
         course_id: The ID of the course to enroll in.
         
     Returns:
-        HttpResponse: Redirect to home page.
+        HttpResponse: Redirect to home page or JSON response.
     """
-    course = Course.objects.get(id=course_id)
-    if request.method == 'POST':
+    course = get_object_or_404(Course, id=course_id)
+    
+    # Debug information
+    logger.info(f"Course enrollment request for course ID: {course_id}")
+    logger.info(f"Course enrollment key: {course.enrollment_key}")
+    logger.info(f"Request method: {request.method}")
+    logger.info(f"Request headers: {dict(request.headers)}")
+    
+    # If using AJAX request to check enrollment key
+    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        try:
+            # Debug the request body
+            request_body = request.body.decode('utf-8')
+            logger.info(f"Request body: {request_body}")
+            
+            data = json.loads(request_body)
+            entered_key = data.get('enrollment_key', '').strip()
+            logger.info(f"Entered enrollment key: {entered_key}")
+            
+            # Check if the course requires an enrollment key
+            if course.enrollment_key:
+                logger.info(f"Comparing keys: '{entered_key}' vs '{course.enrollment_key}'")
+                # Verify the enrollment key
+                if entered_key != course.enrollment_key:
+                    logger.info("Enrollment key verification failed")
+                    return JsonResponse({
+                        'success': False,
+                        'message': 'Der eingegebene Einschreibeschlüssel ist falsch. Bitte versuchen Sie es erneut.'
+                    })
+                logger.info("Enrollment key verification successful")
+            else:
+                logger.info("No enrollment key required for this course")
+            
+            # Create enrollment
+            enrollment, created = Enrollment.objects.get_or_create(
+                student=request.user,
+                course=course
+            )
+            logger.info(f"Enrollment created: {created}")
+            
+            # Return success with available groups for the next step
+            available_groups = Group.objects.filter(course=course)\
+                .annotate(members_count=models.Count('members'))\
+                .filter(members_count__lt=course.max_members)\
+                .exclude(members=request.user)
+                
+            groups_data = [{
+                'id': group.id,
+                'member_count': group.members.count(),
+                'created_at': group.created_at.strftime('%Y-%m-%d %H:%M')
+            } for group in available_groups]
+            
+            requires_group = course.max_members > 1 and not Group.objects.filter(course=course, members=request.user).exists()
+            logger.info(f"Requires group: {requires_group}")
+            logger.info(f"Available groups: {len(groups_data)}")
+                
+            return JsonResponse({
+                'success': True,
+                'message': 'Einschreibung erfolgreich! Bitte wählen Sie ein Team aus.',
+                'groups': groups_data,
+                'requires_group': requires_group
+            })
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON Decode Error: {str(e)}")
+            return JsonResponse({
+                'success': False,
+                'message': 'Invalid request format. Please try again.'
+            }, status=400)
+        except Exception as e:
+            logger.error(f"Error in course_enroll: {str(e)}")
+            return JsonResponse({
+                'success': False,
+                'message': 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.'
+            }, status=500)
+    
+    # For regular form submissions (non-AJAX)
+    elif request.method == 'POST':
+        # Create enrollment directly (fallback for non-JS browsers)
         Enrollment.objects.get_or_create(
             student=request.user,
             course=course
         )
         return redirect('course:home')
+        
     return redirect('course:home')
 
 @login_required
@@ -353,11 +435,14 @@ def course_overview(request, course_id):
         'completed_lessons': completed_lessons,
         'modules': [{
             'title': module_data['module'].title,
+            'difficulty_level': module_data['module'].difficulty_level,
             'lessons': [{
                 'title': lesson_data['lesson'].title,
                 'id': lesson_data['lesson'].id,
                 'order': lesson_data['lesson'].order,
                 'duration': lesson_data['lesson'].duration,
+                'debug_minutes': lesson_data['lesson'].duration.seconds // 60 if lesson_data['lesson'].duration else 0,  # Add debug info
+                'lesson_type': lesson_data['lesson'].lesson_type,  # Add lesson type
                 'is_completed': bool(lesson_data['progress'] and lesson_data['progress'].is_completed)
             } for lesson_data in module_data['lessons']]
         } for module_data in modules_data]
@@ -421,6 +506,37 @@ def manage_course(request, course_id):
             course.difficulty_level = int(request.POST.get('difficulty_level', course.difficulty_level))
             course.is_published = request.POST.get('is_published') == 'true'
             
+            # Handle enrollment key
+            enrollment_key = request.POST.get('enrollment_key', '').strip()
+            course.enrollment_key = enrollment_key if enrollment_key else None
+            
+            # Handle end date
+            end_date = request.POST.get('end_date', '').strip()
+            start_date = request.POST.get('start_date', '').strip()
+            if end_date:
+                try:
+                    from datetime import datetime
+                    course.end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+                except ValueError:
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'Invalid date format. Please use YYYY-MM-DD format.'
+                    }, status=400)
+            else:
+                course.end_date = None
+
+            if start_date:
+                try:
+                    from datetime import datetime
+                    course.start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+                except ValueError:
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'Invalid date format. Please use YYYY-MM-DD format.'
+                    }, status=400)
+            else:
+                course.start_date = None
+
             # Handle domain name
             domain_name = request.POST.get('domain_name', '').strip()
             if domain_name:
@@ -471,23 +587,33 @@ def manage_course(request, course_id):
                 'success': False,
                 'error': str(e)
             })
+    
     if is_admin:
         modules = Module.objects.filter(course=course).order_by('order')
     else:
         modules = Module.objects.filter(course=course, instructor=request.user).order_by('order')
     
+    # Get available JupyterLab images from database
+    available_images = JupyterLabImage.objects.all()
+    
+    # Get available domains (distinct domain_name values from Course model)
+    available_domains = Course.objects.exclude(domain_name__isnull=True).exclude(
+        domain_name='').values_list('domain_name', flat=True).distinct()
+    
     context = {
         'course': course,
         'modules': modules,
         'option': request.GET.get('option', 'overview'),
-        'is_admin': is_admin  # Add admin status to context
+        'is_admin': is_admin,  # Add admin status to context
+        'available_images': available_images,
+        'available_domains': available_domains
     }
 
     if request.GET.get('option') == 'overview' or request.GET.get('option') == None:
         return render(request, 'course/editcourse/manage_settings.html', context)
     elif request.GET.get('option') == 'modules':
         return render(request, 'course/editcourse/manage_modules.html', context)
-    elif request.GET.get('option') == 'groups':
+    elif request.GET.get('option') == 'teams':
         # Add group-specific context
         groups = Group.objects.filter(course=course).prefetch_related('members')
         students = CustomUserModel.objects.filter(
@@ -525,6 +651,12 @@ def create_module(request, course_id):
     try:
         # Get the course
         course = get_object_or_404(Course, id=course_id)
+        # Prevent editing if course is published
+        if course.is_published:
+            return JsonResponse({
+                'success': False,
+                'error': 'Module editing is not allowed after the course is published.'
+            }, status=403)
         
         # Parse the JSON data from request
         try:
@@ -544,6 +676,7 @@ def create_module(request, course_id):
             }, status=400)
         
         description = data.get('description', '')
+        difficulty_level = data.get('difficulty_level', 1)
         
         # Get the last order number
         last_order = Module.objects.filter(course=course).aggregate(Max('order'))['order__max']
@@ -555,6 +688,7 @@ def create_module(request, course_id):
             instructor=request.user,  # Assign current instructor
             title=title,
             description=description,
+            difficulty_level=difficulty_level,
             order=order
         )
         
@@ -587,6 +721,12 @@ def delete_module(request, module_id):
     """
     try:
         module = get_object_or_404(Module, id=module_id)
+        course = module.course
+        if course.is_published:
+            return JsonResponse({
+                'success': False,
+                'error': 'Module editing is not allowed after the course is published.'
+            }, status=403)
         
         # Check if user can edit this module
         if not module.can_edit(request.user):
@@ -639,6 +779,7 @@ def get_module(request, module_id):
             'id': module.id,
             'title': module.title,
             'description': module.description,
+            'difficulty_level': module.difficulty_level,
             'instructor': {
                 'id': module.instructor.id,
                 'name': module.instructor.get_full_name()
@@ -667,8 +808,13 @@ def update_module(request, module_id):
         JsonResponse: The updated module data or error message.
     """
     module = get_object_or_404(Module, id=module_id)
+    course = module.course
+    if course.is_published:
+        return JsonResponse({
+            'success': False,
+            'error': 'Module editing is not allowed after the course is published.'
+        }, status=403)
     
-    # Check if user can edit this module
     if not module.can_edit(request.user):
         return JsonResponse({
             'success': False,
@@ -678,12 +824,14 @@ def update_module(request, module_id):
     data = json.loads(request.body)
     title = data.get('title')
     description = data.get('description')
+    difficulty_level = data.get('difficulty_level', module.difficulty_level)
     
     if not title:
         return JsonResponse({'error': 'Title is required'}, status=400)
     
     module.title = title
     module.description = description
+    module.difficulty_level = difficulty_level
     module.save()
     
     return JsonResponse({
@@ -692,6 +840,7 @@ def update_module(request, module_id):
             'id': module.id,
             'title': module.title,
             'description': module.description,
+            'difficulty_level': module.difficulty_level,
             'can_edit': True
         }
     })
@@ -847,6 +996,16 @@ def lesson_detail(request, lesson_id):
     # Add MEDIA_URL to the context
     response_data['MEDIA_URL'] = settings.MEDIA_URL
     
+    # Add course deadline information for exercise submissions
+    response_data['course'] = course
+    if course.end_date:
+        current_date = timezone.now().date()
+        response_data['submission_deadline_passed'] = current_date > course.end_date
+        response_data['course_end_date'] = course.end_date
+    else:
+        response_data['submission_deadline_passed'] = False
+        response_data['course_end_date'] = None
+    
     return render(request, 'course/learningpage/lesson_base.html', response_data)
 
 @login_required
@@ -881,6 +1040,8 @@ def get_lesson(request, lesson_id):
     if lesson.lesson_type == 'exercise' and hasattr(lesson, 'lesson_exercise'):
         exercise = lesson.lesson_exercise
         response_data['lesson']['exercise_type'] = exercise.exercise_type
+        response_data['lesson']['maximum_points'] = exercise.maximum_points
+        response_data['lesson']['pass_points'] = exercise.pass_points
         
         # Add Jupyter notebook specific data
         if exercise.exercise_type == 'jupyter':
@@ -1058,11 +1219,26 @@ def save_lesson(request, lesson_id):
                 
                 # Update exercise type
                 exercise.exercise_type = exercise_type
+                
+                # Update maximum and pass points
+                maximum_points = request.POST.get('maximum_points')
+                pass_points = request.POST.get('pass_points')
+                
+                if maximum_points:
+                    exercise.maximum_points = int(maximum_points)
+                
+                if pass_points:
+                    exercise.pass_points = int(pass_points)
+                
                 exercise.save()
                 
                 # Handle Jupyter notebook specific files
                 if exercise_type == 'jupyter':
                     print("Processing Jupyter exercise files")
+                    
+                    # Always get groups here
+                    course = lesson.module.course
+                    groups = course.groups.all()
                     
                     # If title changed, rename directories
                     if title_changed:
@@ -1082,12 +1258,12 @@ def save_lesson(request, lesson_id):
                         exercise.file = jupyter_file
                         exercise.save()
                         
-                        # Get all groups for this course and copy files
-                        course = lesson.module.course
-                        groups = course.groups.all()
-                        for group in groups:
-                            copy_exercise_files(group, exercise)
-                    
+                        # Copy files to group directories
+                        #for group in groups:
+                        #    copy_exercise_files(group, exercise)
+                            # ---------- schedule background thread ----------
+                        if exercise:
+                            transaction.on_commit(lambda: start_group_copies(exercise.id))
                     # Handle materials
                     if 'materials' in request.FILES:
                         try:
@@ -1115,9 +1291,10 @@ def save_lesson(request, lesson_id):
                                     raise
                             
                             # Copy all files to group directories after materials are added
-                            for group in groups:
-                                copy_exercise_files(group, exercise)
-                                
+                            #for group in groups:
+                            #    copy_exercise_files(group, exercise)
+                            if exercise:
+                                transaction.on_commit(lambda: start_group_copies(exercise.id))   
                         except Exception as e:
                             print(f"Error processing materials: {str(e)}")
                             raise
@@ -1546,6 +1723,13 @@ def manage_create_group(request, course_id):
     if not (request.user.is_instructor or request.user.is_superuser or course.instructor == request.user):
         raise PermissionDenied
     
+    # Check if course is published - no one can create groups after publication
+    if course.is_published:
+        return JsonResponse({
+            'success': False,
+            'error': 'Teams können nicht erstellt werden, nachdem der Kurs veröffentlicht wurde.'
+        }, status=403)
+    
     try:
         with transaction.atomic():
             group = Group.objects.create(course=course)
@@ -1557,7 +1741,7 @@ def manage_create_group(request, course_id):
                         exercise = lesson.lesson_exercise
                         if exercise and exercise.exercise_type == 'jupyter':
                             logger.info(f"Copying files for Jupyter exercise in lesson {lesson.title}")
-                            copy_exercise_files(group, exercise)
+                            transaction.on_commit(lambda: start_group_copies(exercise.id))
                     except Exercise.DoesNotExist:
                         continue
                     except Exception as e:
@@ -1590,6 +1774,13 @@ def delete_group(request, course_id, group_id):
     course = get_object_or_404(Course, id=course_id)
     if not (request.user.is_instructor or request.user.is_superuser or course.instructor == request.user):
         raise PermissionDenied
+    
+    # Check if course is published - no one can delete groups after publication
+    if course.is_published:
+        return JsonResponse({
+            'success': False,
+            'error': 'Teams können nicht gelöscht werden, nachdem der Kurs veröffentlicht wurde.'
+        }, status=403)
     
     group = get_object_or_404(Group, id=group_id, course=course)
     try:
@@ -1630,7 +1821,7 @@ def add_group_member(request, course_id, group_id):
                         exercise = lesson.lesson_exercise
                         if exercise and exercise.exercise_type == 'jupyter':
                             logger.info(f"Copying files for Jupyter exercise in lesson {lesson.title}")
-                            copy_exercise_files(group, exercise)
+                            #copy_exercise_files(group, exercise)
                     except Exercise.DoesNotExist:
                         continue
                     except Exception as e:
@@ -1784,49 +1975,6 @@ def join_group(request, course_id):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
-@login_required
-def save_exercise_materials(request, exercise_id):
-    """Save exercise materials and copy them to group directories.
-    
-    Args:
-        request: The HTTP request object.
-        exercise_id: The ID of the exercise to save materials for.
-        
-    Returns:
-        JsonResponse: Success message or error.
-    """
-    exercise = get_object_or_404(Exercise, id=exercise_id)
-    
-    if request.method == 'POST':
-        form = ExerciseMaterialForm(request.POST, request.FILES)
-        if form.is_valid():
-            try:
-                with transaction.atomic():
-                    description = form.cleaned_data['description']
-                    files = request.FILES.getlist('files')  # Get multiple files
-                    
-                    for file in files:
-                        # Create a new ExerciseMaterial instance for each file
-                        material = ExerciseMaterial(
-                            exercise=exercise,
-                            description=description,
-                            file=file
-                        )
-                        material.save()
-                    
-                    # Copy exercise files to all group directories
-                    course = exercise.lesson.module.course
-                    groups = course.groups.all()
-                    
-                    for group in groups:
-                        copy_exercise_files(group, exercise)
-                    
-                    return JsonResponse({'status': 'success'})
-            except Exception as e:
-                logger.error(f"Error saving exercise materials: {str(e)}")
-                return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-    
-    return JsonResponse({'status': 'error'}, status=400)
 
 @login_required
 @require_POST
@@ -1914,7 +2062,6 @@ def delete_material(request, lesson_id, material_id):
             'success': False,
             'error': str(e)
         }, status=400)
-
 @login_required
 @require_POST
 def submit_exercise(request, lesson_id):
@@ -1936,9 +2083,19 @@ def submit_exercise(request, lesson_id):
         # Get the lesson and exercise
         lesson = get_object_or_404(Lesson, id=lesson_id)
         exercise = get_object_or_404(Exercise, lesson=lesson)
+        course = lesson.module.course
+        
+        # Check if submissions are still allowed (course end date check)
+        if course.end_date:
+            current_date = timezone.now().date()
+            if current_date > course.end_date:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Einreichungen sind nicht mehr möglich. Die Abgabefrist für diesen Kurs ist bereits abgelaufen.'
+                }, status=400)
         
         # Get the user's group
-        group = Group.objects.filter(course=lesson.module.course, members=request.user).first()
+        group = Group.objects.filter(course=course, members=request.user).first()
         if not group:
             return JsonResponse({
                 'success': False,
@@ -1969,8 +2126,8 @@ def submit_exercise(request, lesson_id):
             settings.DATA_ROOT,
             'exercise_submissions',
             f'group_{group.id}',
-            lesson.title
-            #timestamp
+            lesson.title,
+            timestamp
         )
         
         # Create destination directory
@@ -1979,29 +2136,33 @@ def submit_exercise(request, lesson_id):
         # Copy all files from source to destination
         for root, dirs, files in os.walk(source_dir):
             for file in files:
-                src_file = os.path.join(root, file)
-                # Get relative path from source_dir
-                rel_path = os.path.relpath(src_file, source_dir)
-                dest_file = os.path.join(dest_dir, rel_path)
-                
-                # Create subdirectories if needed
-                os.makedirs(os.path.dirname(dest_file), exist_ok=True)
-                
-                # Copy the file
-                shutil.copy2(src_file, dest_file)
-                
-                # Create submission file record
-                rel_path_from_media = os.path.relpath(dest_file, settings.MEDIA_ROOT)
-                SubmissionFile.objects.create(
-                    submission=submission,
-                    file=rel_path_from_media,
-                    description=f"Submitted file: {rel_path}"
-                )
+                if file.endswith('.ipynb'):  # Only copy Jupyter notebooks
+                    src_file = os.path.join(root, file)
+                    # Get relative path from source_dir
+                    rel_path = os.path.relpath(src_file, source_dir)
+                    dest_file = os.path.join(dest_dir, rel_path)
+                    
+                    # Create subdirectories if needed
+                    os.makedirs(os.path.dirname(dest_file), exist_ok=True)
+                    
+                    # Copy the file
+                    shutil.copy2(src_file, dest_file)
+                    
+                    # Create submission file record
+                    rel_path_from_media = os.path.relpath(dest_file, settings.MEDIA_ROOT)
+                    SubmissionFile.objects.create(
+                        submission=submission,
+                        file=rel_path_from_media,
+                        description=f"Submitted file: {rel_path}"
+                    )
+        
+        # Convert UTC time to local timezone before formatting
+        local_time = timezone.localtime(submission.submitted_at)
         
         return JsonResponse({
             'success': True,
             'submission_id': submission.id,
-            'submitted_at': submission.submitted_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'submitted_at': local_time.strftime('%Y-%m-%d %H:%M:%S'),
             'file_count': submission.files.count()
         })
         
@@ -2035,6 +2196,32 @@ def submissions_dashboard(request):
         
     # Get all exercises for the course
     course = Course.objects.first()
+    
+    # Check if the course end date has passed
+    submission_access_allowed = True
+    submission_access_message = None
+    
+    # Superusers always have access
+    if request.user.is_superuser:
+        submission_access_allowed = True
+    elif course and course.end_date:
+        current_date = timezone.now().date()
+        if current_date <= course.end_date:
+            submission_access_allowed = False
+            # Format date in German format (DD.MM.YYYY)
+            formatted_end_date = course.end_date.strftime('%d.%m.%Y')
+            submission_access_message = f'Die Einreichungen können erst nach dem Kursende am {formatted_end_date} eingesehen werden.'
+    
+    # If submissions are not accessible yet, show the message instead of exercises
+    if not submission_access_allowed:
+        context = {
+            'submission_access_allowed': submission_access_allowed,
+            'submission_access_message': submission_access_message,
+            'course_end_date': course.end_date,
+            'active_section': 'overview',
+            'is_admin': request.user.is_superuser or request.user.is_staff
+        }
+        return render(request, 'course/submissions/dashboard.html', context)
     
     # Base query for exercises
     exercises_query = Exercise.objects.filter(
@@ -2070,7 +2257,10 @@ def submissions_dashboard(request):
     context = {
         'exercises': exercises,
         'active_section': 'overview',
-        'is_admin': request.user.is_superuser or request.user.is_staff
+        'is_admin': request.user.is_superuser or request.user.is_staff,
+        'submission_access_allowed': submission_access_allowed,
+        'submission_access_message': submission_access_message,
+        'course_end_date': course.end_date if course else None
     }
     return render(request, 'course/submissions/dashboard.html', context)
 
@@ -2090,6 +2280,7 @@ def exercise_submissions(request, exercise_id):
     try:
         # Get the exercise and check permissions
         exercise = get_object_or_404(Exercise, id=exercise_id)
+        course = exercise.lesson.module.course
         
         # Check if user has permission to view submissions
         if not request.user.is_instructor and not request.user.is_superuser:
@@ -2110,6 +2301,21 @@ def exercise_submissions(request, exercise_id):
                         'error': 'You can only view submissions for your own exercises'
                     }, status=403)
                 messages.error(request, "You can only view submissions for your own exercises.")
+                return redirect('course:submissions_dashboard')
+        
+        # Check if the course end date has passed (superusers are exempt)
+        if not request.user.is_superuser and course and course.end_date:
+            current_date = timezone.now().date()
+            if current_date <= course.end_date:
+                formatted_end_date = course.end_date.strftime('%d.%m.%Y')
+                error_message = f'Die Einreichungen können erst nach dem Kursende am {formatted_end_date} eingesehen werden.'
+                
+                if request.headers.get('Accept') == 'application/json':
+                    return JsonResponse({
+                        'success': False,
+                        'error': error_message
+                    }, status=403)
+                messages.warning(request, error_message)
                 return redirect('course:submissions_dashboard')
         
         # Get all submissions
@@ -2155,10 +2361,13 @@ def exercise_submissions(request, exercise_id):
                         'name': os.path.basename(file.file.name)
                     } for file in submission.files.all()]
                     
+                    # Convert UTC time to local timezone before formatting
+                    local_time = timezone.localtime(submission.submitted_at)
+                    
                     submissions_data.append({
                         'id': submission.id,
                         'group': f'Group {group.id}' if group else 'No Group',
-                        'submitted_at': submission.submitted_at.strftime('%Y-%m-%d %H:%M'),
+                        'submitted_at': local_time.strftime('%Y-%m-%d %H:%M'),
                         'score': submission.score,
                         'passed': submission.passed,
                         'feedback': submission.feedback,
@@ -2168,6 +2377,7 @@ def exercise_submissions(request, exercise_id):
                 response_data = {
                     'success': True,
                     'exercise_title': exercise.lesson.title,
+                    'exercise_max_points': exercise.maximum_points,
                     'submissions': submissions_data
                 }
                 print(submissions_data)
@@ -2213,11 +2423,35 @@ def grade_submission(request, submission_id):
     submission = get_object_or_404(Submission, id=submission_id)
     group = submission.student.course_groups.first()
     exercise = submission.exercise
+    course = exercise.lesson.module.course
+    
+    # Check if the course end date has passed (superusers are exempt)
+    if not request.user.is_superuser and course and course.end_date:
+        current_date = timezone.now().date()
+        if current_date <= course.end_date:
+            formatted_end_date = course.end_date.strftime('%d.%m.%Y')
+            error_message = f'Die Bewertung von Einreichungen ist erst nach dem Kursende am {formatted_end_date} möglich.'
+            
+            if request.method == 'POST':
+                return JsonResponse({
+                    'success': False,
+                    'error': error_message
+                }, status=403)
+            else:
+                messages.warning(request, error_message)
+                return redirect('course:submissions_dashboard')
     
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            submission.score = float(data.get('score'))
+            # Validate the score against exercise maximum points
+            score = float(data.get('score'))
+            
+            # Ensure score doesn't exceed maximum points
+            if score > exercise.maximum_points:
+                score = exercise.maximum_points
+                
+            submission.score = score
             # passed will be auto-calculated in the model's save method
             submission.feedback = data.get('feedback')
             submission.save()
@@ -2275,6 +2509,15 @@ def submission_statistics(request):
         raise PermissionDenied
         
     course = Course.objects.first()
+    
+    # Check if the course end date has passed (superusers are exempt)
+    if not request.user.is_superuser and course and course.end_date:
+        current_date = timezone.now().date()
+        if current_date <= course.end_date:
+            formatted_end_date = course.end_date.strftime('%d.%m.%Y')
+            error_message = f'Die Statistiken können erst nach dem Kursende am {formatted_end_date} eingesehen werden.'
+            messages.warning(request, error_message)
+            return redirect('course:submissions_dashboard')
 
     # Get all groups in the course
     groups = Group.objects.filter(course=course)
@@ -2335,10 +2578,8 @@ def admin_dashboard(request):
     # Get active tab from query parameters, default to 'users'
     active_tab = request.GET.get('tab', 'users')
     
-    # Get all users except superuser
-    users = CustomUserModel.objects.exclude(
-        is_superuser=True
-    ).select_related(
+    # Get all users including superusers
+    users = CustomUserModel.objects.all().select_related(
         'enrollment'
     ).order_by('date_joined')
     
@@ -2373,10 +2614,16 @@ def admin_change_role(request):
         user = get_object_or_404(CustomUserModel, id=user_id)
         
         # Update user roles based on new_role
-        if new_role == 'instructor':
+        if new_role == 'admin':
+            user.is_superuser = True
+            user.is_instructor = True
+            user.is_student = False
+        elif new_role == 'instructor':
+            user.is_superuser = False
             user.is_instructor = True
             user.is_student = False
         elif new_role == 'student':
+            user.is_superuser = False
             user.is_instructor = False
             user.is_student = True
         
@@ -2392,6 +2639,103 @@ def admin_change_role(request):
             'success': False,
             'error': str(e)
         }, status=400)
+
+@login_required
+def admin_delete_user(request):
+    """Delete a user and all associated data.
+    
+    Args:
+        request: The HTTP request object containing user_id of the user to delete.
+        
+    Returns:
+        JsonResponse: Success status and any error messages.
+    """
+    if not request.user.is_superuser:
+        return JsonResponse({
+            'success': False, 
+            'error': 'Only administrators can delete users'
+        }, status=403)
+        
+    if request.method != 'POST':
+        return JsonResponse({
+            'success': False, 
+            'error': 'Invalid request method'
+        }, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        user_id = data.get('user_id')
+        
+        # Validate the user ID
+        if not user_id:
+            return JsonResponse({
+                'success': False,
+                'error': 'User ID is required'
+            }, status=400)
+            
+        # Get the user to delete
+        user = get_object_or_404(CustomUserModel, id=user_id)
+        
+        # Don't allow deleting yourself
+        if user.id == request.user.id:
+            return JsonResponse({
+                'success': False,
+                'error': 'You cannot delete your own account'
+            }, status=400)
+            
+        # Save user email and name for notification
+        user_email = user.email
+        user_name = user.get_full_name()
+            
+        # Try to notify the user by email before deletion
+        if user_email:
+            try:
+                email_subject = "Ihr Benutzerkonto wurde gelöscht"
+                email_message = f"""
+Sehr geehrte(r) {user_name},
+
+wir möchten Sie darüber informieren, dass Ihr Benutzerkonto in unserem Lernsystem 
+zusammen mit allen zugehörigen Daten gelöscht wurde.
+
+Falls Sie Fragen haben, wenden Sie sich bitte an den Administrator.
+
+Mit freundlichen Grüßen,
+Das Administrationsteam
+                """
+                
+                # Send the email in a non-blocking way
+                send_mail(
+                    subject=email_subject,
+                    message=email_message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[user_email],
+                    fail_silently=True  # Don't fail the deletion if email fails
+                )
+                
+                logger.info(f"Deletion notification email sent to {user_email}")
+            except Exception as e:
+                logger.error(f"Failed to send deletion notification email to {user_email}: {str(e)}")
+        
+        # Delete the user (this will cascade delete all related objects)
+        user.delete()
+        logger.info(f"User {user_name} (ID: {user_id}) deleted by {request.user.get_full_name()}")
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Benutzer {user_name} wurde erfolgreich gelöscht.'
+        })
+        
+    except CustomUserModel.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Benutzer nicht gefunden'
+        }, status=404)
+    except Exception as e:
+        logger.error(f"Error deleting user: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'error': f'Fehler beim Löschen des Benutzers: {str(e)}'
+        }, status=500)
 
 @login_required
 @require_POST
@@ -2457,4 +2801,533 @@ def upload_reference_solution(request, exercise_id):
             'success': False,
             'error': str(e)
         }, status=500)
+
+@login_required
+@require_POST
+def admin_send_email(request):
+    """Send mass emails to selected user groups.
+    
+    Args:
+        request: POST request containing:
+            - subject: Email subject
+            - content: Email content
+            - recipients: Target group ('all', 'students', 'instructors', or 'selected')
+            - selected_users: JSON string of user IDs if recipients is 'selected'
+            
+    Returns:
+        JsonResponse with success status and message/error
+    """
+    if not request.user.is_superuser:
+        return JsonResponse({
+            'success': False,
+            'error': 'Permission denied'
+        }, status=403)
+
+    try:
+        # Log incoming request data for debugging
+        logger.info(f"Email request data: {request.POST}")
+        
+        subject = request.POST.get('subject')
+        content = request.POST.get('content')
+        recipient_group = request.POST.get('recipients')
+
+        # Log parsed values
+        logger.info(f"Parsed email data - Subject: {subject}, Recipients: {recipient_group}")
+
+        if not all([subject, content, recipient_group]):
+            return JsonResponse({
+                'success': False,
+                'error': 'Missing required fields'
+            }, status=400)
+
+        # Get user queryset based on recipient group
+        if recipient_group == 'all':
+            users = CustomUserModel.objects.all()
+        elif recipient_group == 'students':
+            users = CustomUserModel.objects.filter(is_student=True)
+        elif recipient_group == 'instructors':
+            users = CustomUserModel.objects.filter(is_instructor=True)
+        elif recipient_group == 'selected':
+            selected_users_json = request.POST.get('selected_users')
+            if not selected_users_json:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'No users selected'
+                }, status=400)
+                
+            try:
+                selected_user_ids = json.loads(selected_users_json)
+                users = CustomUserModel.objects.filter(id__in=selected_user_ids)
+                
+                if not users.exists():
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'No valid users found'
+                    }, status=400)
+            except json.JSONDecodeError:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Invalid user selection data'
+                }, status=400)
+        else:
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid recipient group'
+            }, status=400)
+
+        # Log recipient count
+        logger.info(f"Found {users.count()} recipients for group: {recipient_group}")
+
+        # Prepare email messages
+        user_emails = [user.email for user in users if user.email]
+        
+        if not user_emails:
+            return JsonResponse({
+                'success': False,
+                'error': 'No valid recipients found'
+            })
+
+        # Log email sending attempt
+        logger.info(f"Attempting to send email to {len(user_emails)} recipients")
+
+        try:
+            # Send emails in a single operation
+            send_count = send_mail(
+                subject=subject,
+                message=content,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=user_emails,
+                fail_silently=False
+            )
+            
+            logger.info(f"Successfully sent {send_count} emails")
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Erfolgreich {send_count} E-Mails gesendet'
+            })
+            
+        except Exception as mail_error:
+            logger.error(f"Email sending error: {str(mail_error)}")
+            return JsonResponse({
+                'success': False,
+                'error': f'Error sending emails: {str(mail_error)}'
+            }, status=500)
+
+    except Exception as e:
+        logger.error(f"General error in admin_send_email: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'error': f'Server error: {str(e)}'
+        }, status=500)
+
+@require_http_methods(["POST"])
+@ensure_csrf_cookie
+def create_ticket(request):
+    if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid request'
+        }, status=400)
+    
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            'success': False,
+            'error': 'User not authenticated'
+        }, status=401)
+    try:
+        subject = request.POST.get('subject')
+        description = request.POST.get('description')
+        
+        if not subject or not description:
+            return JsonResponse({
+                'success': False,
+                'error': 'Subject and description are required'
+            }, status=400)
+
+        # Create ticket instance
+        ticket = Ticket(
+            user=request.user,
+            subject=subject,
+            description=description
+        )
+
+        # Handle image upload if present
+        image_file = None
+        if 'image' in request.FILES:
+            image_file = request.FILES['image']
+            if not image_file.content_type.startswith('image/'):
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Invalid file type. Please upload an image file.'
+                }, status=400)
+            
+            ticket.image = image_file
+
+        # Save the ticket
+        ticket.save()
+        
+        # Create a more professional email template
+        email_subject = f'[Ticket #{ticket.id}] {subject}'
+        
+        email_message = f"""
+Sehr geehrte Damen und Herren,
+
+Betreff: {subject}
+
+Beschreibung:
+{description}
+------------------------------------------------------------
+User:
+Name: {request.user.get_full_name()}
+Email: {request.user.email}
+Rolle: {"Dozent" if request.user.is_instructor else "Student"}
+------------------------------------------------------------
+
+Sie können dieses Ticket im Admin-Dashboard ansehen.
+
+Mit freundlichen Grüßen,
+Databrix Support
+"""
+        
+        # Create EmailMessage instance for attachment support
+        email = EmailMessage(
+            subject=email_subject,
+            body=email_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[i for i in settings.SUPPORT_EMAIL],
+            reply_to=[request.user.email]  # Add reply-to header
+        )
+        
+        # Attach image if present
+        if image_file:
+            image_file.seek(0)
+            email.attach(
+                filename=image_file.name,
+                content=image_file.read(),
+                mimetype=image_file.content_type
+            )
+        
+        # Send email
+        email.send(fail_silently=False)
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Ticket created successfully',
+            'ticket_id': ticket.id
+        })
+        
+    except ValidationError as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=400)
+    except Exception as e:
+        logger.error(f"Error creating ticket: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+@login_required
+def ticket_list(request):
+    """List tickets based on user role."""
+    if request.user.is_staff or request.user.is_instructor:
+        tickets = Ticket.objects.all()
+    else:
+        tickets = Ticket.objects.filter(user=request.user)
+    
+    tickets_data = [{
+        'id': ticket.id,
+        'subject': ticket.subject,
+        'status': ticket.status,
+        'created_at': ticket.created_at.strftime('%d.%m.%Y %H:%M'),
+        'assigned_to': ticket.assigned_to.get_full_name() if ticket.assigned_to else None,
+        'resolution_notes': ticket.resolution_notes if ticket.resolution_notes else None,
+        'user': ticket.user.email
+    } for ticket in tickets]
+    
+    return JsonResponse({
+        'success': True,
+        'tickets': tickets_data
+    })
+
+@login_required
+def ticket_detail(request, ticket_id):
+    """Get details of a specific ticket."""
+    try:
+        ticket = Ticket.objects.get(id=ticket_id)
+        
+        # Check if user has permission to view this ticket
+        if not (request.user.is_staff or request.user.is_instructor or ticket.user == request.user):
+            raise PermissionDenied
+        
+        data = {
+            'id': ticket.id,
+            'subject': ticket.subject,
+            'description': ticket.description,
+            'status': ticket.get_status_display(),
+            'created_at': ticket.created_at.strftime('%d.%m.%Y %H:%M'),
+            'user': ticket.user.get_full_name(),
+            'resolution_notes': ticket.resolution_notes,
+            'assigned_to': ticket.assigned_to.get_full_name() if ticket.assigned_to else None,
+            'image': ticket.image.url if ticket.image else None
+        }
+        
+        return JsonResponse({
+            'success': True,
+            'ticket': data
+        })
+    except Ticket.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Ticket nicht gefunden.'
+        }, status=404)
+    except PermissionDenied:
+        return JsonResponse({
+            'success': False,
+            'error': 'Keine Berechtigung.'
+        }, status=403)
+
+
+@login_required
+@require_POST
+def update_ticket(request, ticket_id):
+    """Update ticket details including status, assigned_to, and resolution notes.
+    
+    Args:
+        request: The HTTP request object.
+        ticket_id: The ID of the ticket to update.
+        
+    Returns:
+        JsonResponse: Success message or error.
+    """
+    try:
+        ticket = get_object_or_404(Ticket, id=ticket_id)
+        
+        # Check if user has permission to update ticket
+        if not (request.user.is_staff or request.user.is_instructor):
+            raise PermissionDenied
+        
+        # Get data from request
+        data = json.loads(request.body)
+        new_status = data.get('status')
+        assigned_to_id = data.get('assigned_to')
+        resolution_notes = data.get('resolution_notes')
+        
+        # Validate status
+        if new_status and new_status not in dict(Ticket.STATUS_CHOICES):
+            return JsonResponse({
+                'success': False,
+                'error': 'Ungültiger Status'
+            }, status=400)
+            
+        # Update ticket fields
+        if new_status:
+            ticket.status = new_status
+            
+        if assigned_to_id:
+            try:
+                assigned_to = CustomUserModel.objects.get(id=assigned_to_id)
+                if not (assigned_to.is_staff or assigned_to.is_instructor):
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'Ticket kann nur an Mitarbeiter oder Dozenten zugewiesen werden'
+                    }, status=400)
+                ticket.assigned_to = assigned_to
+            except CustomUserModel.DoesNotExist:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Benutzer nicht gefunden'
+                }, status=404)
+                
+        if resolution_notes is not None:  # Allow empty string to clear notes
+            ticket.resolution_notes = resolution_notes
+            
+        ticket.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Ticket erfolgreich aktualisiert',
+            'ticket': {
+                'id': ticket.id,
+                'status': ticket.get_status_display(),
+                'assigned_to': ticket.assigned_to.get_full_name() if ticket.assigned_to else None,
+                'resolution_notes': ticket.resolution_notes
+            }
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Ungültige JSON-Daten'
+        }, status=400)
+    except PermissionDenied:
+        return JsonResponse({
+            'success': False,
+            'error': 'Keine Berechtigung zum Bearbeiten des Tickets'
+        }, status=403)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+@login_required
+@require_POST
+def delete_ticket(request, ticket_id):
+    """Delete a ticket.
+    
+    Args:
+        request: The HTTP request object.
+        ticket_id: The ID of the ticket to delete.
+        
+    Returns:
+        JsonResponse: Success message or error.
+    """
+    try:
+        ticket = get_object_or_404(Ticket, id=ticket_id)
+        # Permissions: staff, instructors, or superusers can delete
+        if not (request.user.is_staff or request.user.is_instructor or request.user.is_superuser):
+            raise PermissionDenied
+
+        # Try deleting attached image file if present
+        try:
+            if ticket.image:
+                ticket.image.delete(save=False)
+        except Exception as e:
+            logger.error(f"Error deleting ticket image: {str(e)}")
+
+        ticket.delete()
+        return JsonResponse({
+            'success': True,
+            'message': 'Ticket erfolgreich gelöscht'
+        })
+    except PermissionDenied:
+        return JsonResponse({
+            'success': False,
+            'error': 'Keine Berechtigung.'
+        }, status=403)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+# Add these view functions after the manage_course view
+
+@login_required
+@require_POST
+def add_jupyter_image(request, course_id):
+    """Add a new JupyterLab image to the database.
+    
+    Args:
+        request: The HTTP request object.
+        course_id: The ID of the course.
+        
+    Returns:
+        JsonResponse: Success/failure message.
+    """
+    # Only allow admins to add images
+    if not request.user.is_superuser:
+        return JsonResponse({
+            'success': False,
+            'error': 'Only administrators can add JupyterLab images'
+        }, status=403)
+        
+    try:
+        course = get_object_or_404(Course, id=course_id)
+        image_name = request.POST.get('image_name', '').strip()
+        
+        # Validate image name
+        if not image_name:
+            return JsonResponse({
+                'success': False,
+                'error': 'Image name is required'
+            }, status=400)
+        
+        # Basic Docker image validation
+        if not re.match(r'^([a-z0-9]+(?:[._-][a-z0-9]+)*\/)?([a-z0-9]+(?:[._-][a-z0-9]+)*)(:[a-z0-9]+(?:[._-][a-z0-9]+)*)?$', image_name):
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid Docker image name format'
+            }, status=400)
+        
+        # Use get_or_create to handle the OneToOneField relationship
+        # This will either create a new record or update an existing one
+        jupyterlab_image, created = JupyterLabImage.objects.get_or_create(
+            course=course,
+            defaults={'image_name': image_name}
+        )
+        
+        # If the image already exists, update its name
+        if not created:
+            jupyterlab_image.image_name = image_name
+            jupyterlab_image.save()
+            logger.info(f"Updated existing JupyterLab image for course {course_id}: {image_name}")
+        else:
+            logger.info(f"Created new JupyterLab image for course {course_id}: {image_name}")
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'JupyterLab image added successfully'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error adding JupyterLab image: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=400)
+
+@login_required
+@require_POST
+def add_domain(request, course_id):
+    """Add a new domain to the dropdown.
+    
+    Args:
+        request: The HTTP request object.
+        course_id: The ID of the course.
+        
+    Returns:
+        JsonResponse: Success/failure message.
+    """
+    # Only allow admins to add domains
+    if not request.user.is_superuser:
+        return JsonResponse({
+            'success': False,
+            'error': 'Only administrators can add domains'
+        }, status=403)
+        
+    try:
+        course = get_object_or_404(Course, id=course_id)
+        domain_name = request.POST.get('domain_name', '').strip()
+        
+        # Validate domain name
+        if not domain_name:
+            return JsonResponse({
+                'success': False,
+                'error': 'Domain name is required'
+            }, status=400)
+        
+        # Basic domain validation
+        if not re.match(r'^[a-zA-Z0-9][a-zA-Z0-9-_.]+[a-zA-Z0-9]$', domain_name):
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid domain name format'
+            }, status=400)
+        
+        # We don't need to create a separate record for domains,
+        # just return success to add it to the dropdown
+        return JsonResponse({
+            'success': True,
+            'message': 'Domain added successfully'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error adding domain: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=400)
 

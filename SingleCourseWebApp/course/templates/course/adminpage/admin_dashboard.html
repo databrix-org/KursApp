@@ -44,8 +44,14 @@
                                 <div class="btn-group">
                                     <button class="btn btn-sm btn-outline-primary change-role" 
                                             data-user-id="{{ user.id }}"
-                                            {% if user.is_superuser %}disabled{% endif %}>
+                                            {% if user.id == request.user.id %}disabled{% endif %}>
                                         Rolle ändern
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger delete-user ms-1" 
+                                            data-user-id="{{ user.id }}"
+                                            data-user-name="{{ user.get_full_name }}"
+                                            {% if user.id == request.user.id %}disabled{% endif %}>
+                                        Benutzer löschen
                                     </button>
                                 </div>
                             </td>
@@ -59,14 +65,14 @@
         <!-- Email Service Section -->
         <div class="card mb-4">
             <div class="card-header">
-                <h3 class="h5 mb-0">E-Mail-Service</h3>
+                <h3 class="h5 mb-0">Informations-Service (No Reply)</h3>
             </div>
             <div class="card-body">
                 <form id="emailForm" class="email-form">
                     {% csrf_token %}
                     <div class="form-group">
                         <label for="emailSubject">Betreff</label>
-                        <input type="text" class="form-control" id="emailSubject" name="subject" required>
+                        <input type="text" class="form-control" id="emailSubject" name="subject" value="[No Reply] " required>
                     </div>
                     <div class="form-group">
                         <label for="emailRecipients">Empfänger</label>
@@ -74,14 +80,151 @@
                             <option value="all">Alle Benutzer</option>
                             <option value="students">Alle Studenten</option>
                             <option value="instructors">Alle Dozenten</option>
+                            <option value="selected">Ausgewählte Benutzer</option>
                         </select>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group mt-3" id="userSelectionContainer" style="display: none;">
+                        <label for="userSearch">Benutzer suchen</label>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" id="userSearch" placeholder="Name oder E-Mail eingeben...">
+                            <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="user-selection-list mt-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <h6>Verfügbare Benutzer</h6>
+                                <div>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" id="selectAllUsers">Alle auswählen</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAllUsers">Alle abwählen</button>
+                                </div>
+                            </div>
+                            <div class="user-list-container border p-2" style="max-height: 300px; overflow-y: auto;">
+                                <div class="list-group" id="userList">
+                                    {% for user in users %}
+                                    <div class="list-group-item">
+                                        <div class="form-check">
+                                            <input class="form-check-input user-checkbox" type="checkbox" value="{{ user.id }}" id="user-{{ user.id }}">
+                                            <label class="form-check-label" for="user-{{ user.id }}">
+                                                {{ user.get_full_name }} ({{ user.email }})
+                                                {% if user.is_superuser %}
+                                                    <span class="badge bg-primary">Admin</span>
+                                                {% elif user.is_instructor %}
+                                                    <span class="badge bg-info">Dozent</span>
+                                                {% else %}
+                                                    <span class="badge bg-success">Student</span>
+                                                {% endif %}
+                                            </label>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <input type="hidden" name="selected_users" id="selectedUsers">
+                        </div>
+                    </div>
+                    <div class="form-group mt-3">
                         <label for="emailContent">Nachricht</label>
-                        <textarea class="form-control" id="emailContent" name="content" required></textarea>
+                        <textarea class="form-control" id="emailContent" name="content" rows="6" required>[Bitte beachten Sie: Diese E-Mail wurde von einer No-Reply-Adresse gesendet. Antworten auf diese E-Mail werden nicht gelesen.]
+
+</textarea>
                     </div>
                     <button type="submit" class="btn btn-primary mt-3">E-Mail senden</button>
                 </form>
+            </div>
+        </div>
+    {% elif active_tab == 'tickets' %}
+        <!-- Ticket System Section -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="h5 mb-0">Ticket System</h3>
+                <div class="search-bar">
+                    <input type="text" class="search-input" id="ticketSearch" placeholder="Tickets suchen...">
+                </div>
+            </div>
+            <div class="card-body">
+                <table id="ticketsTable" class="table table-striped user-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Betreff</th>
+                            <th>Benutzer</th>
+                            <th class="d-flex align-items-center gap-2">
+                                Status
+                                <select class="form-select form-select-sm status-filter" id="statusFilter" style="width: auto;">
+                                    <option value="all">Alle Status</option>
+                                    <option value="open">Offen</option>
+                                    <option value="in_progress">In Bearbeitung</option>
+                                    <option value="closed">Geschlossen</option>
+                                </select>
+                            </th>
+                            <th>Erstellt am</th>
+                            <th>Zugewiesen an</th>
+                            <th>Lösungsnotizen</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Tickets will be loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Ticket Edit Modal -->
+        <div class="modal fade" id="ticketModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Ticket bearbeiten</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="ticketEditForm">
+                            {% csrf_token %}
+                            <input type="hidden" id="ticketId" name="ticket_id">
+                            <div class="mb-3">
+                                <label class="form-label">Betreff</label>
+                                <input type="text" class="form-control" id="ticketSubject" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Beschreibung</label>
+                                <textarea class="form-control" id="ticketDescription" readonly rows="3" ></textarea>
+                            </div>
+                            <div class="mb-3" id="ticketImageContainer">
+                                <!-- Image will be inserted here dynamically -->
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Status</label>
+                                <select class="form-select" id="ticketStatus" name="status">
+                                    <option value="open">Offen</option>
+                                    <option value="in_progress">In Bearbeitung</option>
+                                    <option value="closed">Geschlossen</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Zuweisen an</label>
+                                <select class="form-select" id="ticketAssignedTo" name="assigned_to">
+                                    <option value="">Nicht zugewiesen</option>
+                                    {% for user in users %}
+                                        {% if user.is_staff or user.is_instructor %}
+                                            <option value="{{ user.id }}">{{ user.get_full_name }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Lösungsnotizen</label>
+                                <textarea class="form-control" id="ticketResolutionNotes" name="resolution_notes" rows="4" ></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                        <button type="button" class="btn btn-danger me-auto" id="deleteTicket">Löschen</button>
+                        <button type="button" class="btn btn-primary" id="saveTicket">Speichern</button>
+                    </div>
+                </div>
             </div>
         </div>
     {% endif %}
@@ -101,8 +244,9 @@
                     <div class="mb-3">
                         <label class="form-label">Rolle auswählen</label>
                         <select class="form-select" name="role">
-                            <option value="student">Student</option>
+                            <option value="admin">Administrator</option>
                             <option value="instructor">Dozent</option>
+                            <option value="student">Student</option>
                         </select>
                     </div>
                 </form>
@@ -114,7 +258,48 @@
         </div>
     </div>
 </div>
+
+<!-- Delete User Modal -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Benutzer löschen</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i> <strong>Achtung!</strong> Diese Aktion kann nicht rückgängig gemacht werden.
+                </div>
+                <p>
+                    Möchten Sie den Benutzer <strong id="deleteUserName"></strong> wirklich löschen?
+                </p>
+                <p>
+                    Alle mit diesem Benutzer verbundenen Daten werden permanent gelöscht, einschließlich:
+                </p>
+                <ul>
+                    <li>Persönliche Informationen</li>
+                    <li>Kurseinschreibungen</li>
+                    <li>Gruppenverknüpfungen</li>
+                    <li>Übungsabgaben und Bewertungen</li>
+                    <li>Tickets und Anfragen</li>
+                </ul>
+                <form id="deleteUserForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="deleteUserId" name="user_id">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteUser">Benutzer löschen</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
+{% if active_tab == 'tickets' %}
+    <script src="{% static 'course/js/admin/ticket-management.js' %}"></script>
+{% endif %}
 {% endblock %}

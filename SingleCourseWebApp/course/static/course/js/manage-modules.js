@@ -225,9 +225,11 @@ async function loadModuleData(moduleId) {
             // Update quick edit form
             const titleInput = document.getElementById('editModuleTitle');
             const descInput = document.getElementById('editModuleDescription');
+            const difficultySelect = document.getElementById('editModuleDifficultyLevel');
             
             if (titleInput) titleInput.value = module.title || '';
             if (descInput) descInput.value = module.description || '';
+            if (difficultySelect) difficultySelect.value = module.difficulty_level || 1;
         } else {
             console.error('Failed to load module data:', data.error);
             showToast('Error loading module data', 'error');
@@ -245,6 +247,7 @@ async function loadModuleData(moduleId) {
 async function saveModule() {
     const titleInput = document.getElementById('editModuleTitle');
     const descInput = document.getElementById('editModuleDescription');
+    const difficultySelect = document.getElementById('editModuleDifficultyLevel');
     
     if (!titleInput) return;
     
@@ -260,7 +263,8 @@ async function saveModule() {
     
     const moduleData = {
         title: titleInput.value,
-        description: descInput ? descInput.value : ''
+        description: descInput ? descInput.value : '',
+        difficulty_level: difficultySelect ? difficultySelect.value : 1
     };
     
     console.log('Sending module data:', moduleData); // Debug log
@@ -413,7 +417,8 @@ async function createNewModule() {
             },
             body: JSON.stringify({
                 title: 'New Module',
-                description: ''
+                description: '',
+                difficulty_level: 1
             })
         });
 
@@ -425,6 +430,7 @@ async function createNewModule() {
                 id: data.module_id,
                 title: 'New Module',
                 description: '',
+                difficulty_level: 1,
                 lessons: { count: 0 }
             });
             
@@ -461,12 +467,27 @@ async function createNewModule() {
  * @param {string} module.title - Module title
  * @param {string} module.description - Module description
  * @param {Object} module.lessons - Module lessons data
+ * @param {number} module.difficulty_level - Module difficulty level
  * @returns {HTMLElement} The created module card element
  */
 function createModuleCard(module) {
     const div = document.createElement('div');
     div.className = 'col-md-6 col-lg-4 mb-4 module-card';
     div.dataset.moduleId = module.id;
+    
+    // Get difficulty level text
+    const difficultyLabels = {
+        1: 'Anfänger',
+        2: 'Fortgeschritten',
+        3: 'Experte',
+        4: 'Profi',
+        5: 'Demo'
+    };
+    const difficultyText = difficultyLabels[module.difficulty_level] || 'Anfänger';
+    const difficultyClass = module.difficulty_level === 1 ? 'bg-success' : 
+                           module.difficulty_level === 2 ? 'bg-primary' :
+                           module.difficulty_level === 3 ? 'bg-warning' : 
+                           module.difficulty_level === 4 ? 'bg-danger' : 'bg-secondary';
     
     div.innerHTML = `
         <div class="card h-100">
@@ -479,7 +500,10 @@ function createModuleCard(module) {
                 </div>
                 <p class="card-text text-muted">${module.description || 'Keine Beschreibung'}</p>
                 <div class="d-flex justify-content-between align-items-center">
-                    <span class="badge bg-secondary">${module.lessons.count} Lektionen</span>
+                    <div>
+                        <span class="badge bg-secondary me-1">${module.lessons.count} Lektionen</span>
+                        <span class="badge ${difficultyClass}">${difficultyText}</span>
+                    </div>
                     <div class="btn-group">
                         <button type="button" class="btn btn-sm btn-outline-primary edit-module" 
                                 data-module-id="${module.id}" data-bs-toggle="modal" 
@@ -574,6 +598,18 @@ function loadLessonContent(lessonId) {
                     if (exerciseTypeSelect) {
                         exerciseTypeSelect.value = lesson.exercise_type || 'traditional';
                         showExerciseTypeContent(lesson.exercise_type || 'traditional');
+                        
+                        // Set maximum points and pass points if they exist
+                        const maximumPointsInput = document.getElementById('maximumPoints');
+                        const passPointsInput = document.getElementById('passPoints');
+                        
+                        if (maximumPointsInput && lesson.maximum_points !== undefined) {
+                            maximumPointsInput.value = lesson.maximum_points;
+                        }
+                        
+                        if (passPointsInput && lesson.pass_points !== undefined) {
+                            passPointsInput.value = lesson.pass_points;
+                        }
                         
                         if (traditionalQuill) {
                             console.log('Setting exercise content to traditionalQuill');
@@ -739,6 +775,11 @@ function createNewLesson() {
 function saveLesson() {
     if (!currentLessonId) return;
     
+    // Validate all inputs first
+    if (!validateFiles()) {
+        return; // Don't proceed if validation fails
+    }
+    
     // Update save button state
     const saveButton = document.querySelector('button[onclick="saveLesson()"]');
     const originalButtonText = saveButton.innerHTML;
@@ -763,6 +804,12 @@ function saveLesson() {
     } else if (lessonType === 'exercise') {
         const exerciseType = document.getElementById('exerciseType').value;
         formData.append('exercise_type', exerciseType);
+        
+        // Add maximum points and pass points
+        const maximumPoints = document.getElementById('maximumPoints').value;
+        const passPoints = document.getElementById('passPoints').value;
+        formData.append('maximum_points', maximumPoints);
+        formData.append('pass_points', passPoints);
         
         // Use traditionalQuill for all exercise types
         if (traditionalQuill) {
@@ -903,6 +950,31 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeSortable();
     initializeCollapseHandlers();
 
+    // Disable editing if course is published
+    if (window.courseIsPublished) {
+        // Disable add module button
+        const addModuleBtn = document.querySelector('[data-bs-target="#editModuleModal"]');
+        if (addModuleBtn) {
+            addModuleBtn.disabled = true;
+            addModuleBtn.style.pointerEvents = 'none';
+            addModuleBtn.style.opacity = 0.5;
+        }
+        // Disable all edit/delete buttons
+        document.querySelectorAll('.edit-module, .btn-outline-danger').forEach(btn => {
+            btn.disabled = true;
+            btn.style.pointerEvents = 'none';
+            btn.style.opacity = 0.5;
+        });
+        // Hide drag handles
+        document.querySelectorAll('.drag-handle').forEach(handle => {
+            handle.style.display = 'none';
+        });
+        // Prevent drag-and-drop
+        if (window.Sortable && document.getElementById('sortableModules')) {
+            const sortable = window.Sortable.get(document.getElementById('sortableModules'));
+            if (sortable) sortable.option('disabled', true);
+        }
+    }
     // For debugging
     console.log('Remove file event listener registered');
 });
@@ -990,6 +1062,43 @@ function initializeEventListeners() {
     exerciseTypeSelect?.addEventListener('change', () => {
         const selectedType = exerciseTypeSelect.value;
         showExerciseTypeContent(selectedType);
+    });
+    
+    // Points fields event handlers
+    const maximumPointsInput = document.getElementById('maximumPoints');
+    const passPointsInput = document.getElementById('passPoints');
+    
+    // Handle change events
+    maximumPointsInput?.addEventListener('change', () => {
+        // Ensure maximum points is at least equal to pass points
+        if (passPointsInput && parseInt(maximumPointsInput.value) < parseInt(passPointsInput.value)) {
+            passPointsInput.value = maximumPointsInput.value;
+        }
+    });
+    
+    passPointsInput?.addEventListener('change', () => {
+        // Ensure pass points doesn't exceed maximum points
+        if (maximumPointsInput && parseInt(passPointsInput.value) > parseInt(maximumPointsInput.value)) {
+            passPointsInput.value = maximumPointsInput.value;
+        }
+    });
+    
+    // Also handle input events for real-time validation
+    maximumPointsInput?.addEventListener('input', () => {
+        if (maximumPointsInput.value && parseInt(maximumPointsInput.value) < 1) {
+            maximumPointsInput.value = 1;
+        }
+    });
+    
+    passPointsInput?.addEventListener('input', () => {
+        if (passPointsInput.value && parseInt(passPointsInput.value) < 0) {
+            passPointsInput.value = 0;
+        }
+        
+        if (maximumPointsInput && passPointsInput.value && 
+            parseInt(passPointsInput.value) > parseInt(maximumPointsInput.value)) {
+            passPointsInput.value = maximumPointsInput.value;
+        }
     });
     
     // Video file upload handler
@@ -1101,12 +1210,14 @@ function updateModuleTitle(title) {
 async function saveModuleQuick() {
     const titleInput = document.getElementById('editModuleTitle');
     const descInput = document.getElementById('editModuleDescription');
+    const difficultySelect = document.getElementById('editModuleDifficultyLevel');
     
     if (!titleInput) return;
     
     const moduleData = {
         title: titleInput.value,
-        description: descInput ? descInput.value : ''
+        description: descInput ? descInput.value : '',
+        difficulty_level: difficultySelect ? difficultySelect.value : 1
     };
     
     try {
@@ -1153,6 +1264,7 @@ async function saveModuleQuick() {
 function cancelModuleQuickEdit() {
     const titleInput = document.getElementById('editModuleTitle');
     const descInput = document.getElementById('editModuleDescription');
+    const difficultySelect = document.getElementById('editModuleDifficultyLevel');
     
     // Reset inputs to current values
     if (currentModuleId) {
@@ -1162,6 +1274,7 @@ function cancelModuleQuickEdit() {
                 if (data.success) {
                     if (titleInput) titleInput.value = data.module.title || '';
                     if (descInput) descInput.value = data.module.description || '';
+                    if (difficultySelect) difficultySelect.value = data.module.difficulty_level || 1;
                 }
             })
             .catch(error => console.error('Error resetting module info:', error));
@@ -1169,6 +1282,7 @@ function cancelModuleQuickEdit() {
         // For new modules, clear the inputs
         if (titleInput) titleInput.value = '';
         if (descInput) descInput.value = '';
+        if (difficultySelect) difficultySelect.value = 1;
     }
     
     // Collapse the quick edit form
@@ -1212,6 +1326,36 @@ function validateFiles() {
     const materialFiles = document.getElementById('materialFiles');
     let isValid = true;
     
+    // Validate points for exercises
+    const lessonType = document.getElementById('lessonType')?.value;
+    if (lessonType === 'exercise') {
+        const maximumPointsInput = document.getElementById('maximumPoints');
+        const passPointsInput = document.getElementById('passPoints');
+        
+        if (maximumPointsInput && passPointsInput) {
+            const maxPoints = parseInt(maximumPointsInput.value);
+            const passPoints = parseInt(passPointsInput.value);
+            
+            if (maxPoints < 1) {
+                showToast('Maximale Punkte müssen mindestens 1 sein', 'error');
+                maximumPointsInput.value = 1;
+                isValid = false;
+            }
+            
+            if (passPoints < 0) {
+                showToast('Mindestpunktzahl darf nicht negativ sein', 'error');
+                passPointsInput.value = 0;
+                isValid = false;
+            }
+            
+            if (passPoints > maxPoints) {
+                showToast('Mindestpunktzahl darf nicht größer als maximale Punkte sein', 'error');
+                passPointsInput.value = maxPoints;
+                isValid = false;
+            }
+        }
+    }
+    
     if (jupyterFile && jupyterFile.files[0]) {
         const file = jupyterFile.files[0];
         if (!file.name.endsWith('.ipynb')) {
@@ -1233,15 +1377,15 @@ function validateFiles() {
         });
     }
     
-    const videoFile = document.getElementById('videoFile');
-    if (videoFile && videoFile.files[0]) {
-        const file = videoFile.files[0];
-        if (!file.type.startsWith('media/')) {
-            showToast('Bitte wählen Sie eine gültige Videodatei aus', 'error');
-            videoFile.value = '';
-            isValid = false;
-        }
-    }
+    //const videoFile = document.getElementById('videoFile');
+    //if (videoFile && videoFile.files[0]) {
+    //    const file = videoFile.files[0];
+    //    if (!file.type.startsWith('media/')) {
+    //        showToast('Bitte wählen Sie eine gültige Videodatei aus (mp4, mov, avi, wmv, mpeg, mp3, m4a, wav, ogg, webm)', 'error');
+    //        videoFile.value = '';
+    //        isValid = false;
+    //    }
+    //}
     
     return isValid;
 }

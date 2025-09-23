@@ -1,7 +1,9 @@
 {% load static %}
 <link rel="stylesheet" href="{% static 'course/css/base.css' %}">
 <link rel="stylesheet" href="{% static 'course/css/lesson_base.css' %}">
+<link rel="stylesheet" href="{% static 'course/css/footer.css' %}">
 <link rel="shortcut icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <div class="lesson-page-container">
     <div class="lesson-detail-container">
@@ -30,3 +32,5 @@
 
 <input type="hidden" id="lesson-id" value="{{ lesson_id }}">
 <script src="{% static 'course/js/lesson_base.js' %}"></script>
+
+{% include 'course/footer.html' %}

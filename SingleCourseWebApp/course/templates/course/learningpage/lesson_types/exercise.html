@@ -8,11 +8,13 @@
     {% if lesson_type == 'exercise' %}
         {% csrf_token %}
 
+
+
         <!-- Submission History Section -->
         <div class="card">
             <div class="card-body">
                 <div class="table-wrapper">
-                    <div class="collapsible-header">
+                    <div class="collapsible-header exercise-collapsible">
                         <span>Letzte Einreichung</span>
                         <i class="fas fa-chevron-up"></i>
                     </div>
@@ -24,8 +26,8 @@
                                         <th>ID</th>
                                         <th>Datum</th>
                                         <th>Eingereicht von</th>
-                                        <th>Feedback</th>
-                                        <th>Note</th>
+                                        <th>Punkte</th>
+                                        <th>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -35,17 +37,19 @@
                                         <td>{{ latest_submission.submitted_at|date:"d.m.Y H:i" }}</td>
                                         <td>{{ latest_submission.student.get_full_name }}</td>
                                         <td>
-                                            {% if latest_submission.feedback %}
-                                                {{ latest_submission.feedback }}
+                                            {% if latest_submission.score %}
+                                                <span class="badge bg-success">{{ latest_submission.score }} / {{ exercise.maximum_points }}</span>
                                             {% else %}
-                                                <span class="text-muted">Noch kein Feedback</span>
+                                                <span class="badge bg-secondary">Ausstehend</span>
                                             {% endif %}
                                         </td>
                                         <td>
-                                            {% if latest_submission.score %}
-                                                <span class="badge bg-success">{{ latest_submission.score }}</span>
+                                            {% if latest_submission.passed == True %}
+                                                <span class="badge bg-success">Bestanden</span>
+                                            {% elif latest_submission.passed == False %}
+                                                <span class="badge bg-danger">Nicht bestanden</span>
                                             {% else %}
-                                                <span class="badge bg-secondary">Ausstehend</span>
+                                                <span class="badge bg-warning">Ausstehend</span>
                                             {% endif %}
                                         </td>
                                     </tr>
@@ -60,10 +64,30 @@
                             </table>
                         </div>
                         <div class="submit-container">
-                            <button type="button" class="submit-btn" data-lesson-id="{{ lesson_id }}">
-                                <i class="fas fa-paper-plane"></i>
-                                Einreichen
-                            </button>
+                            {% if submission_deadline_passed %}
+                                <div class="alert alert-danger">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <strong>Abgabefrist abgelaufen:</strong> Einreichungen sind nicht mehr möglich. 
+                                    {% if course_end_date %}
+                                        Die Abgabefrist für diesen Kurs endete am {{ course_end_date|date:"d.m.Y" }}.
+                                    {% endif %}
+                                </div>
+                                <button type="button" class="submit-btn" disabled>
+                                    <i class="fas fa-ban"></i>
+                                    Einreichung nicht mehr möglich
+                                </button>
+                            {% else %}
+                                {% if course_end_date %}
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle"></i>
+                                        <strong>Abgabefrist:</strong> {{ course_end_date|date:"d.m.Y" }}
+                                    </div>
+                                {% endif %}
+                                <button type="button" class="submit-btn" data-lesson-id="{{ lesson_id }}">
+                                    <i class="fas fa-paper-plane"></i>
+                                    Einreichen
+                                </button>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -106,3 +130,38 @@
 </div>
 
 <script src="{% static 'course/js/exercise.js' %}"></script>
+
+<!-- remove modal overlay -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // remove any existing modal overlays
+        document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
+            if (overlay && overlay.parentNode) {
+                overlay.parentNode.removeChild(overlay);
+            }
+        });
+        
+        // ensure there are no blocking elements on the page
+        const checkForBlockingElements = function() {
+            const invisibleElements = Array.from(document.querySelectorAll('*')).filter(el => {
+                const style = window.getComputedStyle(el);
+                return (style.position === 'fixed' || style.position === 'absolute') && 
+                       style.zIndex !== 'auto' && 
+                       parseInt(style.zIndex) > 1000 && 
+                       (style.opacity === '0' || style.display === 'none');
+            });
+            
+            invisibleElements.forEach(el => {
+                if (el.classList.contains('modal-overlay') || el.classList.contains('modal-content')) {
+                    el.parentNode.removeChild(el);
+                }
+            });
+        };
+        
+        // execute once immediately
+        checkForBlockingElements();
+        
+        // execute again 100ms later to prevent async loaded elements
+        setTimeout(checkForBlockingElements, 100);
+    });
+</script>

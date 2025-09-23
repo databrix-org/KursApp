@@ -90,7 +90,8 @@
 /* Admin Layout */
 .admin-layout {
     display: flex;
-    min-height: calc(100vh - 60px);
+    min-height: 100vh;
+    position: relative;
 }
 
 .admin-sidebar {
@@ -145,14 +146,16 @@
 
 .admin-main {
     flex-grow: 1;
-    padding: 2rem;
+    padding: 2rem 2rem 0 2rem;
     background: #f8f9fa;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Search Bar */
 .search-bar {
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.2rem;
 }
 
 .search-input {
@@ -268,4 +271,84 @@
     .role-requests-container {
         grid-template-columns: 1fr;
     }
+}
+
+/* Ticket System Styles */
+#ticketDescription {
+    min-height: 200px;
+    resize: vertical;
+}
+
+.modal-dialog.modal-lg {
+    max-width: 800px;  /* Make modal wider */
+}
+
+/* Ticket Status Badge Styles */
+.badge {
+    padding: 0.5em 0.8em;
+    font-weight: 500;
+    border-radius: 4px;
+}
+
+.badge.bg-danger {
+    background-color: #dc3545 !important;
+    color: white;
+}
+
+.badge.bg-warning {
+    background-color: #ffc107 !important;
+    color: #000 !important;  /* Dark text for better contrast on yellow */
+}
+
+.badge.bg-success {
+    background-color: #198754 !important;
+    color: white;
+}
+
+/* Add hover effect for better interactivity */
+.badge {
+    transition: opacity 0.2s ease;
+}
+
+.badge:hover {
+    cursor: default;
+}
+
+/* User selection styles */
+.user-selection-list {
+    margin-top: 1rem;
+}
+
+.user-list-container {
+    border-radius: 4px;
+    background-color: #f8f9fa;
+}
+
+.list-group-item {
+    border-left: none;
+    border-right: none;
+    transition: background-color 0.2s;
+}
+
+.list-group-item:hover {
+    background-color: #f1f3f5;
+}
+
+.list-group-item:first-child {
+    border-top: none;
+}
+
+.list-group-item:last-child {
+    border-bottom: none;
+}
+
+.form-check-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.form-check-label .badge {
+    margin-left: 0.5rem;
 } 

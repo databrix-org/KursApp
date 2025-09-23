@@ -153,4 +153,15 @@
 
 .sortable-drag .drag-handle {
     cursor: grabbing;
-} 
+}
+
+/* Override global modal styles for Module Edit modal */
+#editModuleModal .modal-content {
+    width: 100%;
+    max-width: none;
+}
+
+#editModuleModal .modal-dialog {
+    max-width: none;
+    margin: 0;
+}

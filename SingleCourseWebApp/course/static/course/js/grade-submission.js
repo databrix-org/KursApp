@@ -33,6 +33,19 @@ function initGradingForm(submissionId, returnUrl) {
         });
     }
 
+    // Add event listener to enforce maximum points
+    const scoreInput = document.getElementById('score');
+    if (scoreInput) {
+        scoreInput.addEventListener('input', function() {
+            const maxPoints = parseFloat(this.getAttribute('max'));
+            const currentValue = parseFloat(this.value);
+            
+            if (!isNaN(currentValue) && currentValue > maxPoints) {
+                this.value = maxPoints;
+            }
+        });
+    }
+
     // Initialize file upload handling
     const referenceUpload = document.getElementById('referenceUpload');
     if (referenceUpload) {
@@ -109,13 +122,13 @@ function handleReferenceUpload(event) {
             // Update UI to show reference solution is available
             const referenceInfo = document.querySelector('.reference-solution-info');
             if (referenceInfo) {
-                referenceInfo.innerHTML = '<span class="badge bg-info">Reference Solution Available</span>';
+                referenceInfo.innerHTML = '<span class="badge bg-info">Referenzlösung verfügbar</span>';
             }
             
             // Update button text
             const uploadButton = document.querySelector('.reference-upload button');
             if (uploadButton) {
-                uploadButton.innerHTML = '<i class="fas fa-sync"></i> Change Reference Solution';
+                uploadButton.innerHTML = '<i class="fas fa-sync"></i> Referenzlösung ändern';
             }
             
             // Reload current file with new reference
@@ -241,8 +254,8 @@ function generateNotebookDiff(reference, submission) {
     // Header with total points only
     diffHtml += `
         <div class="comparison-header">
-            <div class="comparison-title">Reference</div>
-            <div class="comparison-title">Student Solution</div>
+            <div class="comparison-title">Referenzlösung</div>
+            <div class="comparison-title">Studentenlösung</div>
         </div>
     `;
     
@@ -365,11 +378,20 @@ function hideFileList() {
 function submitGrade(submissionId, returnUrl) {
     const score = document.getElementById('score').value;
     const feedback = document.getElementById('feedback').value;
+    const maxPoints = parseFloat(document.getElementById('score').getAttribute('max'));
 
     // Validate score
     if (score === '' || isNaN(score)) {
         alert('Please enter a valid score');
         return;
+    }
+    
+    // Enforce maximum points
+    let finalScore = parseFloat(score);
+    if (finalScore > maxPoints) {
+        alert(`Die maximale Punktzahl für diese Übung ist ${maxPoints}. Ihr eingegebener Wert wurde angepasst.`);
+        finalScore = maxPoints;
+        document.getElementById('score').value = maxPoints;
     }
 
     fetch(`/course/submissions/${submissionId}/grade/`, {
@@ -379,7 +401,7 @@ function submitGrade(submissionId, returnUrl) {
             'X-CSRFToken': getCsrfToken()
         },
         body: JSON.stringify({
-            score: score,
+            score: finalScore,
             feedback: feedback
         })
     })

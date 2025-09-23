@@ -1,7 +1,9 @@
 {% load static %}
 <link rel="stylesheet" href="{% static 'course/css/base.css' %}">
 <link rel="stylesheet" href="{% static 'course/css/learn.css' %}">
+<link rel="stylesheet" href="{% static 'course/css/footer.css' %}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <div class="course-learning-container">
     <!-- Welcome Section -->
@@ -17,7 +19,9 @@
             <div class="progress-header">
                 <h2>Willkommen, {{ request.user.first_name }}</h2>
                 {% if continue_lesson %}
-                    <a href="{% url 'course:lesson_detail' continue_lesson.id %}" class="btn-continue">Kurs fortsetzen</a>
+                    <a href="{% url 'course:lesson_detail' continue_lesson.id %}" class="btn-continue">
+                        <i class="fas fa-play-circle mr-2"></i> Kurs fortsetzen
+                    </a>
                 {% endif %}
             </div>
             <div class="progress-container">
@@ -37,54 +41,58 @@
     <!-- Course Content Section -->
     <section class="course-content">
         <div class="content-header">
-            <h2>Kursinhalt</h2>
-            <div class="content-summary">
-                <span>{{ modules_data|length }} Module</span> • 
-                <span>{{ total_lessons }} Lektionen</span>
-            </div>
+            <h2><i class="fas fa-book-open mr-2"></i> Kursinhalt</h2>
         </div>
-
-        <!-- Modules List -->
+        
         <div class="modules-list">
             {% for module_data in modules_data %}
-            <details class="module" open>
-                <summary class="module-header">
-                    <div class="module-title">
-                        <span class="expand-icon">›</span>
-                        {{ module_data.module.title }}
-                    </div>
-                    <div class="module-meta">
-                        <span>{{ module_data.lessons|length }} lessons</span>
-                        {% if module_data.module.duration %}
-                        • <span>{{ module_data.module.duration }}</span>
+                <div class="module-card" data-module-index="{{ forloop.counter0 }}">
+
+                    <h3 class="module-title">{{ module_data.module.title }}</h3>
+                    <div class="module-info">
+                        <span class="module-lessons-count">{{ module_data.lessons|length }} Lektionen</span>
+                        <span class="module-duration" data-module-index="{{ forloop.counter0 }}" data-duration-minutes="10"><i class="far fa-clock"></i> Berechne...</span>
+                        
+                        <!-- Module difficulty badge -->
+                        {% if module_data.module.difficulty_level == 1 %}
+                        <span class="badge bg-success">Anfänger</span>
+                        {% elif module_data.module.difficulty_level == 2 %}
+                        <span class="badge bg-primary">Fortgeschritten</span>
+                        {% elif module_data.module.difficulty_level == 3 %}
+                        <span class="badge bg-warning">Experte</span>
+                        {% elif module_data.module.difficulty_level == 4 %}
+                        <span class="badge bg-danger">Profi</span>
+                        {% elif module_data.module.difficulty_level == 5 %}
+                        <span class="badge bg-secondary">Demo</span>
                         {% endif %}
                     </div>
-                </summary>
-                
-                <ul class="lesson-list">
-                    {% for lesson_data in module_data.lessons %}
-                    <li class="lesson-item {% if lesson_data.progress.is_completed %}completed{% endif %}">
-                        <a href="{% url 'course:lesson_detail' lesson_data.lesson.id %}" class="lesson-link">
-                            <span class="check-icon {% if not lesson_data.progress.is_completed %}uncompleted{% endif %}">
-                                {% if lesson_data.progress.is_completed %}
-                                    <i class="fa fa-check-circle"></i>
-                                {% else %}
-                                    <i class="fa fa-circle-o"></i>
-                                {% endif %}
-                            </span>
-                            <span class="lesson-title">{{ lesson_data.lesson.title }}</span>
-                            {% if lesson_data.lesson.duration %}
-                            <span class="lesson-duration">{{ lesson_data.lesson.duration }}</span>
-                            {% endif %}
-                        </a>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </details>
+                    <div class="module-progress-info">
+                        <span class="module-completion-status" data-module-index="{{ forloop.counter0 }}">Berechne...</span>
+                    </div>
+                    <div class="module-card-arrow">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                </div>
             {% endfor %}
         </div>
     </section>
+    
+    <!-- Lessons Modal -->
+    <div id="lessonsModal" class="lessons-modal">
+        <div class="lessons-modal-content">
+            <div class="modal-header">
+                <h3 id="modalModuleTitle"></h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <ul id="modalLessonsList" class="modal-lessons-list"></ul>
+            </div>
+        </div>
+    </div>
 </div>
 
-<input type="hidden" id="debug-data" value="{{ debug_data_json|safe }}">
+<!-- Ensure JSON data is properly escaped -->
+<textarea id="debug-data" style="display: none;">{{ debug_data_json|safe }}</textarea>
 <script src="{% static 'course/js/learn.js' %}"></script>
+
+{% include 'course/footer.html' %}
