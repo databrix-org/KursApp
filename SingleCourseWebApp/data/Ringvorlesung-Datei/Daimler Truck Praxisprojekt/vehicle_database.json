@@ -1,0 +1,9 @@
+{
+  "table": [
+    "h_sales_code",
+    "h_vehicle",
+    "l_vehicle_sales_code",
+    "s_vehicle_axle_details",
+    "vedoc_asa"
+  ]
+}
