@@ -1,0 +1,6 @@
+legacy/
+node_modules/
+.next/
+packages/api-client/schema.d.ts
+packages/api-client/openapi.yaml
+**/*.md

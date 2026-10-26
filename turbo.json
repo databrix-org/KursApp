@@ -1,0 +1,12 @@
+{
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**"],
+      "env": ["BACKEND_URL"]
+    },
+    "typecheck": { "dependsOn": ["^typecheck"] },
+    "lint": {},
+    "test": {}
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "extends": "@repo/typescript-config/base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": { "@repo/design-system/*": ["./*"] }
+  },
+  "include": ["**/*.ts", "**/*.tsx"]
+}

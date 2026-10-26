@@ -1,0 +1,3194 @@
+openapi: 3.0.3
+info:
+  title: Databrix API
+  version: 1.0.0
+paths:
+  /api/v1/admin/announcements/:
+    post:
+      operationId: admin_announcements_create
+      tags:
+      - admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminAnnouncementRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AdminAnnouncementRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminAnnouncementRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+          description: ''
+  /api/v1/assets/:
+    get:
+      operationId: assets_list
+      tags:
+      - assets
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Asset'
+          description: ''
+  /api/v1/assets/{id}/:
+    get:
+      operationId: assets_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: Ein UUID-String, der asset identifiziert.
+        required: true
+      tags:
+      - assets
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+          description: ''
+  /api/v1/assets/{id}/download/:
+    get:
+      operationId: assets_download_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: Ein UUID-String, der asset identifiziert.
+        required: true
+      tags:
+      - assets
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Download'
+          description: ''
+  /api/v1/assets/{id}/finalize/:
+    post:
+      operationId: assets_finalize_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: Ein UUID-String, der asset identifiziert.
+        required: true
+      tags:
+      - assets
+      security:
+      - cookieAuth: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+          description: ''
+  /api/v1/assets/{id}/inline/:
+    get:
+      operationId: assets_inline_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: Ein UUID-String, der asset identifiziert.
+        required: true
+      tags:
+      - assets
+      security:
+      - cookieAuth: []
+      responses:
+        '302':
+          description: No response body
+  /api/v1/assets/{id}/retire/:
+    post:
+      operationId: assets_retire_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: Ein UUID-String, der asset identifiziert.
+        required: true
+      tags:
+      - assets
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+          description: ''
+  /api/v1/assets/initiate/:
+    post:
+      operationId: assets_initiate_create
+      tags:
+      - assets
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssetInitiationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AssetInitiationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AssetInitiationRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetUpload'
+          description: ''
+  /api/v1/courses/:
+    get:
+      operationId: courses_list
+      tags:
+      - courses
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Course'
+          description: ''
+    post:
+      operationId: courses_create
+      tags:
+      - courses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CourseRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CourseRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+          description: ''
+  /api/v1/courses/{id}/:
+    get:
+      operationId: courses_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der Course identifiziert.
+        required: true
+      tags:
+      - courses
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+          description: ''
+    put:
+      operationId: courses_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der Course identifiziert.
+        required: true
+      tags:
+      - courses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CourseRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CourseRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+          description: ''
+    patch:
+      operationId: courses_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der Course identifiziert.
+        required: true
+      tags:
+      - courses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCourseRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCourseRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCourseRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+          description: ''
+    delete:
+      operationId: courses_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der Course identifiziert.
+        required: true
+      tags:
+      - courses
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/courses/{id}/announcements/:
+    post:
+      operationId: courses_announcements_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der Course identifiziert.
+        required: true
+      tags:
+      - courses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnnouncementRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AnnouncementRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AnnouncementRequestRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+          description: ''
+  /api/v1/courses/{id}/enroll/:
+    post:
+      operationId: courses_enroll_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der Course identifiziert.
+        required: true
+      tags:
+      - courses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnrollmentRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EnrollmentRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EnrollmentRequestRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+          description: ''
+  /api/v1/courses/{id}/notebook/:
+    get:
+      operationId: courses_notebook_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der Course identifiziert.
+        required: true
+      tags:
+      - courses
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotebookDestination'
+          description: ''
+  /api/v1/courses/{id}/notebook-access/:
+    post:
+      operationId: courses_notebook_access_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der Course identifiziert.
+        required: true
+      tags:
+      - courses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotebookAccessRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/NotebookAccessRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/NotebookAccessRequestRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotebookAccessResult'
+          description: ''
+  /api/v1/courses/{id}/outline/:
+    get:
+      operationId: courses_outline_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der Course identifiziert.
+        required: true
+      tags:
+      - courses
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Outline'
+          description: ''
+  /api/v1/courses/{id}/staff/:
+    get:
+      operationId: courses_staff_list
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der Course identifiziert.
+        required: true
+      tags:
+      - courses
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StaffMember'
+          description: ''
+    post:
+      operationId: courses_staff_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der Course identifiziert.
+        required: true
+      tags:
+      - courses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffRequestRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StaffMember'
+          description: ''
+    delete:
+      operationId: courses_staff_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der Course identifiziert.
+        required: true
+      tags:
+      - courses
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/courses/{id}/statistics/:
+    get:
+      operationId: courses_statistics_list
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der Course identifiziert.
+        required: true
+      tags:
+      - courses
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GroupStatistics'
+          description: ''
+  /api/v1/courses/{id}/students/:
+    get:
+      operationId: courses_students_list
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der Course identifiziert.
+        required: true
+      tags:
+      - courses
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CourseStudent'
+          description: ''
+  /api/v1/groups/:
+    get:
+      operationId: groups_list
+      tags:
+      - groups
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Group'
+          description: ''
+    post:
+      operationId: groups_create
+      tags:
+      - groups
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GroupRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GroupRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+          description: ''
+  /api/v1/groups/{id}/:
+    get:
+      operationId: groups_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der Group identifiziert.
+        required: true
+      tags:
+      - groups
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+          description: ''
+    put:
+      operationId: groups_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der Group identifiziert.
+        required: true
+      tags:
+      - groups
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GroupRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GroupRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+          description: ''
+    patch:
+      operationId: groups_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der Group identifiziert.
+        required: true
+      tags:
+      - groups
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedGroupRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedGroupRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedGroupRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+          description: ''
+    delete:
+      operationId: groups_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der Group identifiziert.
+        required: true
+      tags:
+      - groups
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/groups/{id}/join/:
+    post:
+      operationId: groups_join_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der Group identifiziert.
+        required: true
+      tags:
+      - groups
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemberRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MemberRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MemberRequestRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+          description: ''
+  /api/v1/groups/{id}/leave/:
+    post:
+      operationId: groups_leave_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der Group identifiziert.
+        required: true
+      tags:
+      - groups
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemberRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MemberRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MemberRequestRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+          description: ''
+  /api/v1/invitations/:
+    get:
+      operationId: invitations_list
+      tags:
+      - invitations
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InvitationRecord'
+          description: ''
+    post:
+      operationId: invitations_create
+      tags:
+      - invitations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvitationRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InvitationRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InvitationRequestRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationCreated'
+          description: ''
+  /api/v1/invitations/accept/:
+    post:
+      operationId: invitations_accept_create
+      tags:
+      - invitations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvitationAcceptRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InvitationAcceptRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InvitationAcceptRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationAccepted'
+          description: ''
+  /api/v1/lessons/:
+    get:
+      operationId: lessons_list
+      tags:
+      - lessons
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Lesson'
+          description: ''
+    post:
+      operationId: lessons_create
+      tags:
+      - lessons
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LessonRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LessonRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LessonRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lesson'
+          description: ''
+  /api/v1/lessons/{id}/:
+    get:
+      operationId: lessons_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der lesson identifiziert.
+        required: true
+      tags:
+      - lessons
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lesson'
+          description: ''
+    put:
+      operationId: lessons_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der lesson identifiziert.
+        required: true
+      tags:
+      - lessons
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LessonRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LessonRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LessonRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lesson'
+          description: ''
+    patch:
+      operationId: lessons_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der lesson identifiziert.
+        required: true
+      tags:
+      - lessons
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedLessonRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedLessonRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedLessonRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lesson'
+          description: ''
+    delete:
+      operationId: lessons_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der lesson identifiziert.
+        required: true
+      tags:
+      - lessons
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/lessons/{id}/completion/:
+    put:
+      operationId: lessons_completion_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der lesson identifiziert.
+        required: true
+      tags:
+      - lessons
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompletionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CompletionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CompletionRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Completion'
+          description: ''
+  /api/v1/lessons/{id}/exercise/:
+    put:
+      operationId: lessons_exercise_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der lesson identifiziert.
+        required: true
+      tags:
+      - lessons
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExerciseRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ExerciseRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ExerciseRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exercise'
+          description: ''
+  /api/v1/modules/:
+    get:
+      operationId: modules_list
+      tags:
+      - modules
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Module'
+          description: ''
+    post:
+      operationId: modules_create
+      tags:
+      - modules
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModuleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ModuleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ModuleRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Module'
+          description: ''
+  /api/v1/modules/{id}/:
+    get:
+      operationId: modules_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der module identifiziert.
+        required: true
+      tags:
+      - modules
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Module'
+          description: ''
+    put:
+      operationId: modules_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der module identifiziert.
+        required: true
+      tags:
+      - modules
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModuleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ModuleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ModuleRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Module'
+          description: ''
+    patch:
+      operationId: modules_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der module identifiziert.
+        required: true
+      tags:
+      - modules
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedModuleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedModuleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedModuleRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Module'
+          description: ''
+    delete:
+      operationId: modules_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der module identifiziert.
+        required: true
+      tags:
+      - modules
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/schema/:
+    get:
+      operationId: schema_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      - in: query
+        name: lang
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - ar-dz
+          - ast
+          - az
+          - be
+          - bg
+          - bn
+          - br
+          - bs
+          - ca
+          - ckb
+          - cs
+          - cy
+          - da
+          - de
+          - dsb
+          - el
+          - en
+          - en-au
+          - en-gb
+          - eo
+          - es
+          - es-ar
+          - es-co
+          - es-mx
+          - es-ni
+          - es-ve
+          - et
+          - eu
+          - fa
+          - fi
+          - fr
+          - fy
+          - ga
+          - gd
+          - gl
+          - he
+          - hi
+          - hr
+          - hsb
+          - hu
+          - hy
+          - ia
+          - id
+          - ig
+          - io
+          - is
+          - it
+          - ja
+          - ka
+          - kab
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lb
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - ms
+          - my
+          - nb
+          - ne
+          - nl
+          - nn
+          - os
+          - pa
+          - pl
+          - pt
+          - pt-br
+          - ro
+          - ru
+          - sk
+          - sl
+          - sq
+          - sr
+          - sr-latn
+          - sv
+          - sw
+          - ta
+          - te
+          - tg
+          - th
+          - tk
+          - tr
+          - tt
+          - udm
+          - ug
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-hans
+          - zh-hant
+      tags:
+      - schema
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/yaml:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/session/:
+    get:
+      operationId: session_retrieve
+      tags:
+      - session
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+          description: ''
+  /api/v1/session/change/:
+    post:
+      operationId: session_change_create
+      tags:
+      - session
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    patch:
+      operationId: session_change_partial_update
+      tags:
+      - session
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProfileRequest'
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    delete:
+      operationId: session_change_destroy
+      tags:
+      - session
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/v1/session/reset/:
+    post:
+      operationId: session_reset_create
+      tags:
+      - session
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ResetRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ResetRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+          description: ''
+  /api/v1/session/reset-confirm/:
+    post:
+      operationId: session_reset_confirm_create
+      tags:
+      - session
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetConfirmRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ResetConfirmRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ResetConfirmRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+          description: ''
+  /api/v1/session/verify/:
+    post:
+      operationId: session_verify_create
+      tags:
+      - session
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KeyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/KeyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/KeyRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+          description: ''
+  /api/v1/submissions/:
+    get:
+      operationId: submissions_list
+      tags:
+      - submissions
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Submission'
+          description: ''
+  /api/v1/submissions/{id}/:
+    get:
+      operationId: submissions_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der submission identifiziert.
+        required: true
+      tags:
+      - submissions
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Submission'
+          description: ''
+  /api/v1/submissions/{id}/finalize/:
+    post:
+      operationId: submissions_finalize_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der submission identifiziert.
+        required: true
+      tags:
+      - submissions
+      security:
+      - cookieAuth: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Submission'
+          description: ''
+  /api/v1/submissions/{id}/grade/:
+    post:
+      operationId: submissions_grade_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der submission identifiziert.
+        required: true
+      tags:
+      - submissions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GradeRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GradeRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GradeRequestRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Submission'
+          description: ''
+  /api/v1/submissions/initiate/:
+    post:
+      operationId: submissions_initiate_create
+      tags:
+      - submissions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmissionInitiationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SubmissionInitiationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SubmissionInitiationRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmissionUpload'
+          description: ''
+  /api/v1/tickets/:
+    get:
+      operationId: tickets_list
+      tags:
+      - tickets
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ticket'
+          description: ''
+    post:
+      operationId: tickets_create
+      tags:
+      - tickets
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TicketRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TicketRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TicketRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
+  /api/v1/tickets/{id}/:
+    get:
+      operationId: tickets_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der ticket identifiziert.
+        required: true
+      tags:
+      - tickets
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
+    put:
+      operationId: tickets_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der ticket identifiziert.
+        required: true
+      tags:
+      - tickets
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TicketRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TicketRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TicketRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
+    patch:
+      operationId: tickets_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der ticket identifiziert.
+        required: true
+      tags:
+      - tickets
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTicketRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTicketRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTicketRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: ''
+    delete:
+      operationId: tickets_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Ein eindeutiger Ganzzahl-Wert, der ticket identifiziert.
+        required: true
+      tags:
+      - tickets
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/users/:
+    get:
+      operationId: users_list
+      tags:
+      - users
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/users/{id}/:
+    patch:
+      operationId: users_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRoleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedRoleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedRoleRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    delete:
+      operationId: users_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - users
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+components:
+  schemas:
+    AdminAnnouncementRequest:
+      type: object
+      properties:
+        subject:
+          type: string
+          minLength: 1
+          maxLength: 255
+        body:
+          type: string
+          minLength: 1
+          maxLength: 100000
+        recipients:
+          $ref: '#/components/schemas/RecipientsEnum'
+        selected_users:
+          type: array
+          items:
+            type: integer
+      required:
+      - body
+      - recipients
+      - subject
+    AnnouncementRequestRequest:
+      type: object
+      properties:
+        subject:
+          type: string
+          minLength: 1
+          maxLength: 255
+        body:
+          type: string
+          minLength: 1
+          maxLength: 100000
+      required:
+      - body
+      - subject
+    Asset:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        category:
+          $ref: '#/components/schemas/AssetCategoryEnum'
+        course:
+          type: integer
+          nullable: true
+        lesson:
+          type: integer
+          nullable: true
+        ticket:
+          type: integer
+          nullable: true
+        submission:
+          type: integer
+          nullable: true
+        name:
+          type: string
+          maxLength: 255
+        size:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        sha256:
+          type: string
+          maxLength: 64
+        content_type:
+          type: string
+          maxLength: 128
+        status:
+          type: string
+          maxLength: 16
+      required:
+      - category
+      - id
+      - name
+    AssetCategoryEnum:
+      enum:
+      - course
+      - notebooks
+      - assessment
+      - support
+      type: string
+      description: |-
+        * `course` - course
+        * `notebooks` - notebooks
+        * `assessment` - assessment
+        * `support` - support
+    AssetInitiationCategoryEnum:
+      enum:
+      - course
+      - assessment
+      - support
+      type: string
+      description: |-
+        * `course` - course
+        * `assessment` - assessment
+        * `support` - support
+    AssetInitiationRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        size:
+          type: integer
+          maximum: 2147483648
+          minimum: 1
+          format: int64
+        category:
+          $ref: '#/components/schemas/AssetInitiationCategoryEnum'
+        course:
+          type: integer
+          nullable: true
+        lesson:
+          type: integer
+          nullable: true
+        ticket:
+          type: integer
+          nullable: true
+      required:
+      - category
+      - name
+      - size
+    AssetUpload:
+      type: object
+      properties:
+        asset:
+          $ref: '#/components/schemas/Asset'
+        url:
+          type: string
+          format: uri
+        content_type:
+          type: string
+      required:
+      - asset
+      - content_type
+      - url
+    Capabilities:
+      type: object
+      properties:
+        teach:
+          type: boolean
+        manage:
+          type: boolean
+      required:
+      - manage
+      - teach
+    Completion:
+      type: object
+      properties:
+        completed:
+          type: boolean
+      required:
+      - completed
+    CompletionRequest:
+      type: object
+      properties:
+        completed:
+          type: boolean
+      required:
+      - completed
+    Course:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        instructor:
+          type: integer
+          readOnly: true
+          nullable: true
+        start_date:
+          type: string
+          format: date
+          nullable: true
+          description: Course start date
+        end_date:
+          type: string
+          format: date
+          nullable: true
+          description: Course end date
+        difficulty_level:
+          allOf:
+          - $ref: '#/components/schemas/DifficultyLevelEnum'
+          description: |-
+            Course difficulty level
+
+            * `1` - Beginner
+            * `2` - Intermediate
+            * `3` - Advanced
+            * `4` - Professional
+            * `5` - Demo
+          minimum: -9223372036854775808
+          maximum: 9223372036854775807
+        max_members:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Maximum number of students allowed in a group (for group exercises)
+        is_published:
+          type: boolean
+        frontend_enabled:
+          type: boolean
+        lab_url:
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
+        capabilities:
+          allOf:
+          - $ref: '#/components/schemas/Capabilities'
+          readOnly: true
+        enrolled:
+          type: boolean
+          readOnly: true
+      required:
+      - capabilities
+      - enrolled
+      - id
+      - instructor
+    CourseRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+          minLength: 1
+        start_date:
+          type: string
+          format: date
+          nullable: true
+          description: Course start date
+        end_date:
+          type: string
+          format: date
+          nullable: true
+          description: Course end date
+        difficulty_level:
+          allOf:
+          - $ref: '#/components/schemas/DifficultyLevelEnum'
+          description: |-
+            Course difficulty level
+
+            * `1` - Beginner
+            * `2` - Intermediate
+            * `3` - Advanced
+            * `4` - Professional
+            * `5` - Demo
+          minimum: -9223372036854775808
+          maximum: 9223372036854775807
+        max_members:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Maximum number of students allowed in a group (for group exercises)
+        is_published:
+          type: boolean
+        frontend_enabled:
+          type: boolean
+        lab_url:
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
+        enrollment_key:
+          type: string
+          writeOnly: true
+          maxLength: 100
+    CourseStudent:
+      type: object
+      properties:
+        student_id:
+          type: integer
+        student__first_name:
+          type: string
+        student__last_name:
+          type: string
+        student__email:
+          type: string
+          format: email
+        notebook_access__confirmed:
+          type: boolean
+          nullable: true
+      required:
+      - notebook_access__confirmed
+      - student__email
+      - student__first_name
+      - student__last_name
+      - student_id
+    DifficultyLevelEnum:
+      enum:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      type: integer
+      description: |-
+        * `1` - Beginner
+        * `2` - Intermediate
+        * `3` - Advanced
+        * `4` - Professional
+        * `5` - Demo
+    Download:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+      required:
+      - url
+    EnrollmentRequestRequest:
+      type: object
+      properties:
+        key:
+          type: string
+    Exercise:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        exercise_type:
+          allOf:
+          - $ref: '#/components/schemas/ExerciseTypeEnum'
+          description: |-
+            Type of exercise
+
+            * `traditional` - Traditional Exercise
+            * `jupyter` - Jupyter Notebook Exercise
+        maximum_points:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Maximum points students can earn from the exercise
+        pass_points:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Minimum points required for students to pass the exercise
+        version:
+          type: integer
+          readOnly: true
+      required:
+      - id
+      - version
+    ExerciseRequest:
+      type: object
+      properties:
+        exercise_type:
+          allOf:
+          - $ref: '#/components/schemas/ExerciseTypeEnum'
+          description: |-
+            Type of exercise
+
+            * `traditional` - Traditional Exercise
+            * `jupyter` - Jupyter Notebook Exercise
+        maximum_points:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Maximum points students can earn from the exercise
+        pass_points:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Minimum points required for students to pass the exercise
+    ExerciseTypeEnum:
+      enum:
+      - traditional
+      - jupyter
+      type: string
+      description: |-
+        * `traditional` - Traditional Exercise
+        * `jupyter` - Jupyter Notebook Exercise
+    Grade:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        grader:
+          type: integer
+          nullable: true
+        score:
+          type: number
+          format: double
+        feedback:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        is_legacy_snapshot:
+          type: boolean
+      required:
+      - created_at
+      - id
+      - score
+    GradeRequestRequest:
+      type: object
+      properties:
+        score:
+          type: number
+          format: double
+          minimum: 0
+        feedback:
+          type: string
+      required:
+      - score
+    Group:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        course:
+          type: integer
+        group_number:
+          type: integer
+          readOnly: true
+          nullable: true
+          description: Sequential group number starting from 1, automatically assigned
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupMember'
+          readOnly: true
+        lab_url:
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
+      required:
+      - course
+      - group_number
+      - id
+      - members
+    GroupMember:
+      type: object
+      properties:
+        id:
+          type: integer
+        first_name:
+          type: string
+        last_name:
+          type: string
+      required:
+      - first_name
+      - id
+      - last_name
+    GroupRequest:
+      type: object
+      properties:
+        course:
+          type: integer
+        lab_url:
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
+      required:
+      - course
+    GroupStatistics:
+      type: object
+      properties:
+        group_id:
+          type: integer
+          nullable: true
+        submissions:
+          type: integer
+        accepted:
+          type: integer
+        average:
+          type: number
+          format: double
+          nullable: true
+        maximum:
+          type: number
+          format: double
+          nullable: true
+        members:
+          type: array
+          items:
+            type: string
+      required:
+      - accepted
+      - average
+      - group_id
+      - maximum
+      - members
+      - submissions
+    InvitationAcceptRequest:
+      type: object
+      properties:
+        token:
+          type: string
+          format: uuid
+        first_name:
+          type: string
+        last_name:
+          type: string
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - token
+    InvitationAccepted:
+      type: object
+      properties:
+        status:
+          type: string
+        verification_required:
+          type: boolean
+      required:
+      - status
+      - verification_required
+    InvitationCreated:
+      type: object
+      properties:
+        id:
+          type: integer
+        status:
+          type: string
+      required:
+      - id
+      - status
+    InvitationRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+          format: email
+        course_id:
+          type: integer
+          nullable: true
+        role:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+        consumed_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+      - consumed_at
+      - course_id
+      - email
+      - expires_at
+      - id
+      - role
+    InvitationRequestRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        course:
+          type: integer
+          nullable: true
+        role:
+          $ref: '#/components/schemas/InvitationRequestRoleEnum'
+      required:
+      - email
+      - role
+    InvitationRequestRoleEnum:
+      enum:
+      - student
+      - instructor
+      type: string
+      description: |-
+        * `student` - student
+        * `instructor` - instructor
+    KeyRequest:
+      type: object
+      properties:
+        key:
+          type: string
+          minLength: 1
+      required:
+      - key
+    Lesson:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        module:
+          type: integer
+        title:
+          type: string
+          maxLength: 255
+        order:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        lesson_type:
+          allOf:
+          - $ref: '#/components/schemas/LessonTypeEnum'
+          description: |-
+            Type of lesson content
+
+            * `video` - Video Lesson
+            * `reading` - Reading Material
+            * `exercise` - Exercise
+        duration:
+          type: string
+          description: Expected time to complete this lesson
+        lesson_content:
+          type: string
+          nullable: true
+          description: Main lesson content/text material
+        exercise:
+          allOf:
+          - $ref: '#/components/schemas/Exercise'
+          readOnly: true
+        completed:
+          type: boolean
+          readOnly: true
+      required:
+      - completed
+      - exercise
+      - id
+      - module
+      - order
+      - title
+    LessonRequest:
+      type: object
+      properties:
+        module:
+          type: integer
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        order:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        lesson_type:
+          allOf:
+          - $ref: '#/components/schemas/LessonTypeEnum'
+          description: |-
+            Type of lesson content
+
+            * `video` - Video Lesson
+            * `reading` - Reading Material
+            * `exercise` - Exercise
+        duration:
+          type: string
+          description: Expected time to complete this lesson
+        lesson_content:
+          type: string
+          nullable: true
+          description: Main lesson content/text material
+      required:
+      - module
+      - order
+      - title
+    LessonTypeEnum:
+      enum:
+      - video
+      - reading
+      - exercise
+      type: string
+      description: |-
+        * `video` - Video Lesson
+        * `reading` - Reading Material
+        * `exercise` - Exercise
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - email
+      - password
+    MemberRequestRequest:
+      type: object
+      properties:
+        user_id:
+          type: integer
+    Message:
+      type: object
+      properties:
+        status:
+          type: string
+        detail:
+          type: string
+    Module:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        course:
+          type: integer
+        instructor:
+          type: integer
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        order:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        difficulty_level:
+          allOf:
+          - $ref: '#/components/schemas/DifficultyLevelEnum'
+          description: |-
+            Module difficulty level
+
+            * `1` - Beginner
+            * `2` - Intermediate
+            * `3` - Advanced
+            * `4` - Professional
+            * `5` - Demo
+          minimum: -9223372036854775808
+          maximum: 9223372036854775807
+      required:
+      - course
+      - id
+      - instructor
+      - order
+      - title
+    ModuleRequest:
+      type: object
+      properties:
+        course:
+          type: integer
+        instructor:
+          type: integer
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        order:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        difficulty_level:
+          allOf:
+          - $ref: '#/components/schemas/DifficultyLevelEnum'
+          description: |-
+            Module difficulty level
+
+            * `1` - Beginner
+            * `2` - Intermediate
+            * `3` - Advanced
+            * `4` - Professional
+            * `5` - Demo
+          minimum: -9223372036854775808
+          maximum: 9223372036854775807
+      required:
+      - course
+      - instructor
+      - order
+      - title
+    NotebookAccessRequestRequest:
+      type: object
+      properties:
+        user_id:
+          type: integer
+        confirmed:
+          type: boolean
+      required:
+      - confirmed
+      - user_id
+    NotebookAccessResult:
+      type: object
+      properties:
+        confirmed:
+          type: boolean
+      required:
+      - confirmed
+    NotebookDestination:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/NotebookDestinationStatusEnum'
+        url:
+          type: string
+          format: uri
+          nullable: true
+      required:
+      - status
+      - url
+    NotebookDestinationStatusEnum:
+      enum:
+      - pending
+      - unconfigured
+      - ready
+      type: string
+      description: |-
+        * `pending` - pending
+        * `unconfigured` - unconfigured
+        * `ready` - ready
+    Outline:
+      type: object
+      properties:
+        modules:
+          type: array
+          items:
+            $ref: '#/components/schemas/Module'
+        lessons:
+          type: array
+          items:
+            $ref: '#/components/schemas/Lesson'
+      required:
+      - lessons
+      - modules
+    PatchedCourseRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+          minLength: 1
+        start_date:
+          type: string
+          format: date
+          nullable: true
+          description: Course start date
+        end_date:
+          type: string
+          format: date
+          nullable: true
+          description: Course end date
+        difficulty_level:
+          allOf:
+          - $ref: '#/components/schemas/DifficultyLevelEnum'
+          description: |-
+            Course difficulty level
+
+            * `1` - Beginner
+            * `2` - Intermediate
+            * `3` - Advanced
+            * `4` - Professional
+            * `5` - Demo
+          minimum: -9223372036854775808
+          maximum: 9223372036854775807
+        max_members:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Maximum number of students allowed in a group (for group exercises)
+        is_published:
+          type: boolean
+        frontend_enabled:
+          type: boolean
+        lab_url:
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
+        enrollment_key:
+          type: string
+          writeOnly: true
+          maxLength: 100
+    PatchedGroupRequest:
+      type: object
+      properties:
+        course:
+          type: integer
+        lab_url:
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
+    PatchedLessonRequest:
+      type: object
+      properties:
+        module:
+          type: integer
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        order:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        lesson_type:
+          allOf:
+          - $ref: '#/components/schemas/LessonTypeEnum'
+          description: |-
+            Type of lesson content
+
+            * `video` - Video Lesson
+            * `reading` - Reading Material
+            * `exercise` - Exercise
+        duration:
+          type: string
+          description: Expected time to complete this lesson
+        lesson_content:
+          type: string
+          nullable: true
+          description: Main lesson content/text material
+    PatchedModuleRequest:
+      type: object
+      properties:
+        course:
+          type: integer
+        instructor:
+          type: integer
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        order:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        difficulty_level:
+          allOf:
+          - $ref: '#/components/schemas/DifficultyLevelEnum'
+          description: |-
+            Module difficulty level
+
+            * `1` - Beginner
+            * `2` - Intermediate
+            * `3` - Advanced
+            * `4` - Professional
+            * `5` - Demo
+          minimum: -9223372036854775808
+          maximum: 9223372036854775807
+    PatchedProfileRequest:
+      type: object
+      properties:
+        first_name:
+          type: string
+          minLength: 1
+        last_name:
+          type: string
+          minLength: 1
+    PatchedRoleRequest:
+      type: object
+      properties:
+        role:
+          $ref: '#/components/schemas/RoleRoleEnum'
+    PatchedTicketRequest:
+      type: object
+      properties:
+        course:
+          type: integer
+          nullable: true
+        subject:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+          minLength: 1
+        status:
+          $ref: '#/components/schemas/TicketStatusEnum'
+        assigned_to:
+          type: integer
+          nullable: true
+        resolution_notes:
+          type: string
+          nullable: true
+    RecipientsEnum:
+      enum:
+      - all
+      - students
+      - instructors
+      - selected
+      type: string
+      description: |-
+        * `all` - all
+        * `students` - students
+        * `instructors` - instructors
+        * `selected` - selected
+    ResetConfirmRequest:
+      type: object
+      properties:
+        key:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - key
+      - password
+    ResetRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+      required:
+      - email
+    RoleRoleEnum:
+      enum:
+      - student
+      - instructor
+      - admin
+      type: string
+      description: |-
+        * `student` - student
+        * `instructor` - instructor
+        * `admin` - admin
+    Session:
+      type: object
+      properties:
+        user:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          nullable: true
+        sso_enabled:
+          type: boolean
+      required:
+      - sso_enabled
+      - user
+    StaffMember:
+      type: object
+      properties:
+        id:
+          type: integer
+        first_name:
+          type: string
+        last_name:
+          type: string
+        role:
+          type: string
+      required:
+      - first_name
+      - id
+      - last_name
+      - role
+    StaffRequestRequest:
+      type: object
+      properties:
+        user_id:
+          type: integer
+        role:
+          allOf:
+          - $ref: '#/components/schemas/StaffRequestRoleEnum'
+          default: instructor
+      required:
+      - user_id
+    StaffRequestRoleEnum:
+      enum:
+      - owner
+      - instructor
+      type: string
+      description: |-
+        * `owner` - owner
+        * `instructor` - instructor
+    Submission:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        exercise:
+          type: integer
+        exercise_title:
+          type: string
+          readOnly: true
+        student:
+          type: integer
+        group:
+          type: integer
+          nullable: true
+        roster: {}
+        submitted_at:
+          type: string
+          format: date-time
+          readOnly: true
+        accepted_at:
+          type: string
+          format: date-time
+          nullable: true
+        finalized_at:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          $ref: '#/components/schemas/SubmissionStatusEnum'
+        rejection_reason:
+          type: string
+          maxLength: 255
+        exercise_version:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        score:
+          type: number
+          format: double
+          nullable: true
+        passed:
+          type: boolean
+          nullable: true
+        feedback:
+          type: string
+          nullable: true
+        assets:
+          type: array
+          items:
+            $ref: '#/components/schemas/Asset'
+          readOnly: true
+        grade_history:
+          type: array
+          items:
+            $ref: '#/components/schemas/Grade'
+          readOnly: true
+        material_manifest: {}
+        deadline_date:
+          type: string
+          format: date
+          nullable: true
+        maximum_points:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        pass_points:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        can_grade:
+          type: boolean
+          readOnly: true
+        processing_delayed:
+          type: boolean
+          readOnly: true
+      required:
+      - assets
+      - can_grade
+      - exercise
+      - exercise_title
+      - grade_history
+      - id
+      - processing_delayed
+      - student
+      - submitted_at
+    SubmissionInitiationRequest:
+      type: object
+      properties:
+        exercise_id:
+          type: integer
+        idempotency_key:
+          type: string
+          format: uuid
+        files:
+          type: array
+          items:
+            $ref: '#/components/schemas/UploadFileRequest'
+      required:
+      - exercise_id
+      - files
+      - idempotency_key
+    SubmissionStatusEnum:
+      enum:
+      - pending
+      - validating
+      - accepted
+      - rejected
+      type: string
+      description: |-
+        * `pending` - pending
+        * `validating` - validating
+        * `accepted` - accepted
+        * `rejected` - rejected
+    SubmissionUpload:
+      type: object
+      properties:
+        submission:
+          $ref: '#/components/schemas/Submission'
+        uploads:
+          type: array
+          items:
+            $ref: '#/components/schemas/UploadGrant'
+      required:
+      - submission
+      - uploads
+    Ticket:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: integer
+          readOnly: true
+        course:
+          type: integer
+          nullable: true
+        subject:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/TicketStatusEnum'
+        assigned_to:
+          type: integer
+          nullable: true
+        resolution_notes:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - description
+      - id
+      - subject
+      - user
+    TicketRequest:
+      type: object
+      properties:
+        course:
+          type: integer
+          nullable: true
+        subject:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+          minLength: 1
+        status:
+          $ref: '#/components/schemas/TicketStatusEnum'
+        assigned_to:
+          type: integer
+          nullable: true
+        resolution_notes:
+          type: string
+          nullable: true
+      required:
+      - description
+      - subject
+    TicketStatusEnum:
+      enum:
+      - open
+      - in_progress
+      - closed
+      type: string
+      description: |-
+        * `open` - Open
+        * `in_progress` - In Progress
+        * `closed` - Closed
+    UploadFileRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        size:
+          type: integer
+          maximum: 2147483648
+          minimum: 1
+          format: int64
+      required:
+      - name
+      - size
+    UploadGrant:
+      type: object
+      properties:
+        asset_id:
+          type: string
+          format: uuid
+        url:
+          type: string
+          format: uri
+        content_type:
+          type: string
+      required:
+      - asset_id
+      - content_type
+      - url
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+          format: email
+        first_name:
+          type: string
+        last_name:
+          type: string
+        is_admin:
+          type: boolean
+        is_instructor:
+          type: boolean
+        is_active:
+          type: boolean
+      required:
+      - email
+      - first_name
+      - id
+      - is_admin
+      - is_instructor
+      - last_name
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
