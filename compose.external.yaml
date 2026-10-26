@@ -1,0 +1,18 @@
+# Compose 2.24.4+: use with compose.yaml when PostgreSQL and Redis are external.
+x-external-env: &external-env
+  DATABASE_URL: ${DATABASE_URL:?Set external PostgreSQL DATABASE_URL}
+  CELERY_BROKER_URL: ${CELERY_BROKER_URL:?Set external CELERY_BROKER_URL}
+services:
+  postgres:
+    profiles: [local-services]
+  redis:
+    profiles: [local-services]
+  backend:
+    depends_on: !reset {}
+    environment: *external-env
+  worker:
+    depends_on: !reset {}
+    environment: *external-env
+  dispatcher:
+    depends_on: !reset {}
+    environment: *external-env

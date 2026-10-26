@@ -1,0 +1,22 @@
+{
+  "name": "@repo/api-client",
+  "private": true,
+  "version": "0.0.0",
+  "exports": {
+    ".": "./index.ts",
+    "./schema": "./schema.d.ts"
+  },
+  "scripts": {
+    "generate": "openapi-typescript openapi.yaml -o schema.d.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "openapi-typescript": "^7.10.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "openapi-fetch": "^0.17.0"
+  }
+}

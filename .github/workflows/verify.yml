@@ -1,0 +1,49 @@
+name: verify
+on: [push, pull_request]
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine@sha256:742f40ea20b9ff2ff31db5458d127452988a2164df9e17441e191f3b72252193
+        env:
+          {
+            POSTGRES_USER: databrix,
+            POSTGRES_PASSWORD: local-ci-password,
+            POSTGRES_DB: databrix_ci,
+          }
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U databrix" --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      DATABASE_URL: postgres://databrix:local-ci-password@localhost:5432/databrix_ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22.18.0", cache: pnpm }
+      - uses: astral-sh/setup-uv@v6
+        with: { version: "0.9.5", python-version: "3.11" }
+      - run: pnpm install --frozen-lockfile
+      - run: uv sync --project apps/backend --frozen
+      - run: pnpm verify
+      - run: uv run --project apps/backend python apps/backend/manage.py test course.tests
+      - run: uv run --project apps/backend python apps/backend/manage.py makemigrations --check --dry-run
+      - run: pnpm api:generate
+      - run: git diff --exit-code -- packages/api-client/openapi.yaml packages/api-client/schema.d.ts
+      - run: pnpm --filter @repo/web build
+  containers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22.18.0", cache: pnpm }
+      - run: bash scripts/local.sh setup
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @repo/web exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+      - run: python3 scripts/container_rehearsal.py --confirm-local-demo
+      - if: failure()
+        run: docker compose logs --tail=150
+      - if: always()
+        run: docker compose down

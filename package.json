@@ -1,0 +1,30 @@
+{
+  "name": "databrix",
+  "private": true,
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "dev": "pnpm --filter @repo/web dev",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "test": "pnpm --filter @repo/web test",
+    "test:e2e": "pnpm --filter @repo/web test:e2e",
+    "docs:check": "uv run --project apps/backend python scripts/check_docs.py",
+    "api:generate": "uv run --project apps/backend python apps/backend/manage.py spectacular --file packages/api-client/openapi.yaml && pnpm --filter @repo/api-client generate",
+    "verify": "pnpm typecheck && pnpm lint && pnpm test && pnpm test:setup && pnpm docs:check",
+    "preflight": "bash scripts/preflight.sh --docker",
+    "preflight:dev": "bash scripts/preflight.sh --development",
+    "local:setup": "bash scripts/local.sh setup",
+    "local:start": "bash scripts/local.sh start",
+    "local:rebuild": "bash scripts/local.sh rebuild",
+    "local:stop": "bash scripts/local.sh stop",
+    "local:status": "bash scripts/local.sh status",
+    "local:logs": "bash scripts/local.sh logs",
+    "test:setup": "uv run --project apps/backend python -m unittest discover -s scripts -p test_local_setup.py"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.10",
+    "turbo": "^2.5.0",
+    "typescript": "^5.9.3"
+  }
+}
